@@ -1,0 +1,30 @@
+{
+  "name": "hamster-habitat-planner",
+  "version": "1.0.0",
+  "description": "Free 3D hamster habitat planner: check cage size, bedding depth, bedding volume and wheel size for Syrian and dwarf hamsters.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "author": "JOMIZOO (https://jomizoo.com)",
+  "homepage": "https://limocax-pixel.github.io/hamster-habitat-planner/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/limocax-pixel/hamster-habitat-planner.git"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test",
+    "readme": "node scripts/update-readme.mjs"
+  },
+  "engines": {
+    "node": ">=20.11"
+  },
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "vite": "^8.3.1"
+  }
+}

@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this planner or its data, please cite it as below."
+title: "Hamster Habitat Planner"
+abstract: "Free, open-source 3D planner and dataset for hamster enclosures: minimum floor space, bedding depth, burrowing depth, bedding volume and wheel size for Syrian, Campbell's dwarf, winter white, hybrid dwarf, Roborovski and Chinese hamsters."
+type: software
+authors:
+  - name: "JOMIZOO"
+    website: "https://jomizoo.com/"
+repository-code: "https://github.com/limocax-pixel/hamster-habitat-planner"
+url: "https://limocax-pixel.github.io/hamster-habitat-planner/"
+license: MIT
+version: "1.0.0"
+date-released: "2026-09-25"
+keywords:
+  - hamster
+  - hamster cage size
+  - hamster bedding
+  - animal welfare
+  - 3D planner

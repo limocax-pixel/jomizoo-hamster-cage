@@ -1,0 +1,701 @@
+{
+  "name": "Hamster habitat parameters by species",
+  "description": "Minimum enclosure floor space and height, bedding depth, burrowing depth, wheel diameter, wire bar spacing, sand bath size, room temperature, adult weight and lifespan for six pet hamster species and hybrids, each value linked to its sources.",
+  "version": "1.0.0",
+  "updated": "2026-09-25",
+  "license": "CC-BY-4.0",
+  "creator": "JOMIZOO",
+  "url": "https://limocax-pixel.github.io/hamster-habitat-planner/",
+  "notes": [
+    "Values are minimums from veterinary and animal-welfare guidance. Where sources differ, we use the value shared by the major welfare organisations and record the others in the block's notes.",
+    "Units: lengths in cm, areas in cm², weights in g, temperatures in °C.",
+    "floor: unbroken floor space; platforms and extra levels do not count towards it.",
+    "bedding.minDepthCm applies across the floor; bedding.burrowDepthCm is the depth of the deeper burrowing area.",
+    "Evidence from controlled studies exists only for Syrian hamsters; values for the smaller species come from welfare guidance."
+  ],
+  "species": [
+    {
+      "id": "syrian",
+      "name": "Syrian hamster",
+      "namePlural": "Syrian hamsters",
+      "shortName": "Syrian",
+      "groupName": "Syrian",
+      "scientificName": "Mesocricetus auratus",
+      "otherNames": [
+        "golden hamster",
+        "teddy bear hamster"
+      ],
+      "floor": {
+        "minLengthCm": 100,
+        "minWidthCm": 50,
+        "minAreaCm2": 5000,
+        "recommendedAreaCm2": 10000,
+        "sources": [
+          "tvt-g",
+          "pdsa",
+          "bluecross",
+          "woodgreen",
+          "fischer2007"
+        ],
+        "notes": "TVT: about 1 m² is better. Fischer et al. (2007) found signs of better welfare at 10,000 cm² than in smaller cages."
+      },
+      "height": {
+        "minCm": 50,
+        "sources": [
+          "tvt-g",
+          "bluecross",
+          "woodgreen"
+        ]
+      },
+      "bedding": {
+        "minDepthCm": 25,
+        "burrowDepthCm": 40,
+        "sources": [
+          "tvt-g",
+          "pdsa",
+          "hauzenberger2006",
+          "nc3rs"
+        ],
+        "notes": "TVT: a diggable layer of at least 25 cm, 40 cm preferred. Blue Cross gives a 20 cm minimum; Hamster Info Ireland 30 cm."
+      },
+      "wheel": {
+        "minDiameterCm": 30,
+        "recommendedDiameterCm": 30,
+        "sources": [
+          "tvt-g",
+          "pdsa",
+          "woodgreen",
+          "reebs2005"
+        ],
+        "notes": "Blue Cross gives 27–32 cm. Syrian hamsters preferred a 35 cm wheel to a 23 cm one (Reebs & St-Onge 2005)."
+      },
+      "bars": {
+        "maxGapCm": 1.0,
+        "sources": [
+          "woodgreen",
+          "hamingway-types",
+          "bluecross"
+        ]
+      },
+      "sandBath": {
+        "minLengthCm": 20,
+        "minWidthCm": 20,
+        "sources": [
+          "tvt-g"
+        ]
+      },
+      "temperatureC": {
+        "min": 18,
+        "max": 24,
+        "sources": [
+          "tvt-g",
+          "happyhamsters"
+        ]
+      },
+      "adult": {
+        "weightG": [
+          85,
+          140
+        ],
+        "lifespanYears": [
+          2,
+          3
+        ],
+        "sources": [
+          "merck-size",
+          "lafebervet"
+        ]
+      }
+    },
+    {
+      "id": "campbell",
+      "name": "Campbell's dwarf hamster",
+      "namePlural": "Campbell's dwarf hamsters",
+      "shortName": "Campbell's",
+      "groupName": "Campbell's dwarf",
+      "scientificName": "Phodopus campbelli",
+      "otherNames": [
+        "Russian dwarf hamster"
+      ],
+      "floor": {
+        "minLengthCm": 100,
+        "minWidthCm": 50,
+        "minAreaCm2": 5000,
+        "sources": [
+          "tvt-z",
+          "pdsa",
+          "bluecross",
+          "woodgreen"
+        ]
+      },
+      "height": {
+        "minCm": 50,
+        "sources": [
+          "tvt-z",
+          "bluecross"
+        ],
+        "notes": "Woodgreen accepts 40 cm for dwarf hamsters."
+      },
+      "bedding": {
+        "minDepthCm": 20,
+        "burrowDepthCm": 30,
+        "sources": [
+          "tvt-z",
+          "bluecross",
+          "hamsterinfoireland",
+          "woodgreen"
+        ],
+        "notes": "TVT's summary box gives 25 cm. Burrowing depth from Woodgreen's 25–30 cm digging area."
+      },
+      "wheel": {
+        "minDiameterCm": 20,
+        "recommendedDiameterCm": 25,
+        "sources": [
+          "pdsa",
+          "woodgreen",
+          "tvt-z",
+          "bluecross"
+        ],
+        "notes": "TVT raised its minimum for dwarf hamsters to 25 cm in 2025; Blue Cross gives 22–25 cm."
+      },
+      "bars": {
+        "maxGapCm": 0.7,
+        "sources": [
+          "woodgreen",
+          "hamingway-types"
+        ]
+      },
+      "sandBath": {
+        "minLengthCm": 20,
+        "minWidthCm": 20,
+        "sources": [
+          "tvt-z"
+        ]
+      },
+      "temperatureC": {
+        "min": 18,
+        "max": 24,
+        "sources": [
+          "tvt-z"
+        ]
+      },
+      "adult": {
+        "weightG": [
+          35,
+          50
+        ],
+        "lifespanYears": [
+          1.5,
+          2
+        ],
+        "sources": [
+          "merck-size"
+        ],
+        "notes": "Merck gives these figures for 'Russian dwarf hamsters'. TVT gives a lifespan of 1.5–3 years."
+      },
+      "health": {
+        "note": "Prone to diabetes: avoid sugary treats.",
+        "sources": [
+          "tvt-z",
+          "hamingway-diabetes"
+        ]
+      }
+    },
+    {
+      "id": "winter-white",
+      "name": "Winter white hamster",
+      "namePlural": "Winter white hamsters",
+      "shortName": "Winter white",
+      "groupName": "winter white",
+      "scientificName": "Phodopus sungorus",
+      "otherNames": [
+        "Djungarian hamster",
+        "Siberian hamster",
+        "Russian dwarf hamster"
+      ],
+      "floor": {
+        "minLengthCm": 100,
+        "minWidthCm": 50,
+        "minAreaCm2": 5000,
+        "sources": [
+          "tvt-z",
+          "pdsa",
+          "bluecross",
+          "woodgreen"
+        ]
+      },
+      "height": {
+        "minCm": 50,
+        "sources": [
+          "tvt-z",
+          "bluecross"
+        ],
+        "notes": "Woodgreen accepts 40 cm for dwarf hamsters."
+      },
+      "bedding": {
+        "minDepthCm": 20,
+        "burrowDepthCm": 30,
+        "sources": [
+          "tvt-z",
+          "bluecross",
+          "hamsterinfoireland",
+          "woodgreen"
+        ],
+        "notes": "TVT's summary box gives 25 cm. Burrowing depth from Woodgreen's 25–30 cm digging area."
+      },
+      "wheel": {
+        "minDiameterCm": 20,
+        "recommendedDiameterCm": 25,
+        "sources": [
+          "pdsa",
+          "woodgreen",
+          "tvt-z",
+          "bluecross"
+        ],
+        "notes": "TVT raised its minimum for dwarf hamsters to 25 cm in 2025; Blue Cross gives 22–25 cm."
+      },
+      "bars": {
+        "maxGapCm": 0.7,
+        "sources": [
+          "woodgreen",
+          "hamingway-types"
+        ]
+      },
+      "sandBath": {
+        "minLengthCm": 20,
+        "minWidthCm": 20,
+        "sources": [
+          "tvt-z"
+        ]
+      },
+      "temperatureC": {
+        "min": 18,
+        "max": 24,
+        "sources": [
+          "tvt-z"
+        ]
+      },
+      "adult": {
+        "weightG": [
+          35,
+          50
+        ],
+        "lifespanYears": [
+          1.5,
+          2
+        ],
+        "sources": [
+          "merck-size"
+        ],
+        "notes": "Merck gives these figures for 'Russian dwarf hamsters' (Campbell's and winter white); not verified for winter whites alone."
+      }
+    },
+    {
+      "id": "hybrid-dwarf",
+      "name": "Hybrid dwarf hamster",
+      "namePlural": "hybrid dwarf hamsters",
+      "shortName": "Hybrid dwarf",
+      "groupName": "hybrid dwarf",
+      "scientificName": "Phodopus campbelli × Phodopus sungorus",
+      "otherNames": [
+        "Russian dwarf hamster"
+      ],
+      "floor": {
+        "minLengthCm": 100,
+        "minWidthCm": 50,
+        "minAreaCm2": 5000,
+        "sources": [
+          "tvt-z",
+          "pdsa",
+          "bluecross",
+          "woodgreen"
+        ],
+        "notes": "TVT's dwarf hamster guidance covers hybrids; Woodgreen notes most dwarf hamsters sold in shops are hybrids."
+      },
+      "height": {
+        "minCm": 50,
+        "sources": [
+          "tvt-z",
+          "bluecross"
+        ]
+      },
+      "bedding": {
+        "minDepthCm": 20,
+        "burrowDepthCm": 30,
+        "sources": [
+          "tvt-z",
+          "bluecross",
+          "woodgreen"
+        ]
+      },
+      "wheel": {
+        "minDiameterCm": 20,
+        "recommendedDiameterCm": 25,
+        "sources": [
+          "pdsa",
+          "woodgreen",
+          "tvt-z"
+        ]
+      },
+      "bars": {
+        "maxGapCm": 0.7,
+        "sources": [
+          "woodgreen"
+        ]
+      },
+      "sandBath": {
+        "minLengthCm": 20,
+        "minWidthCm": 20,
+        "sources": [
+          "tvt-z"
+        ]
+      },
+      "temperatureC": {
+        "min": 18,
+        "max": 24,
+        "sources": [
+          "tvt-z"
+        ]
+      },
+      "adult": {
+        "weightG": [
+          35,
+          50
+        ],
+        "lifespanYears": [
+          1.5,
+          2
+        ],
+        "sources": [
+          "merck-size"
+        ]
+      },
+      "health": {
+        "note": "Prone to diabetes: avoid sugary treats.",
+        "sources": [
+          "tvt-z",
+          "hamingway-diabetes"
+        ]
+      }
+    },
+    {
+      "id": "roborovski",
+      "name": "Roborovski hamster",
+      "namePlural": "Roborovski hamsters",
+      "shortName": "Roborovski",
+      "groupName": "Roborovski",
+      "scientificName": "Phodopus roborovskii",
+      "otherNames": [
+        "Robo",
+        "desert hamster"
+      ],
+      "floor": {
+        "minLengthCm": 100,
+        "minWidthCm": 50,
+        "minAreaCm2": 5000,
+        "sources": [
+          "tvt-z",
+          "pdsa",
+          "bluecross",
+          "woodgreen"
+        ]
+      },
+      "height": {
+        "minCm": 50,
+        "sources": [
+          "tvt-z",
+          "bluecross"
+        ],
+        "notes": "Woodgreen accepts 40 cm for dwarf hamsters."
+      },
+      "bedding": {
+        "minDepthCm": 20,
+        "burrowDepthCm": 30,
+        "sources": [
+          "tvt-z",
+          "bluecross",
+          "hamsterinfoireland",
+          "woodgreen"
+        ]
+      },
+      "wheel": {
+        "minDiameterCm": 20,
+        "recommendedDiameterCm": 25,
+        "sources": [
+          "pdsa",
+          "bluecross",
+          "tvt-z"
+        ],
+        "notes": "Blue Cross gives 20–22 cm; TVT's 2025 minimum for dwarf hamsters is 25 cm."
+      },
+      "bars": {
+        "maxGapCm": 0.6,
+        "sources": [
+          "hamingway-types"
+        ]
+      },
+      "sandBath": {
+        "minLengthCm": 20,
+        "minWidthCm": 20,
+        "sources": [
+          "tvt-z",
+          "bluecross"
+        ],
+        "notes": "Blue Cross: sand is particularly important for Roborovski hamsters."
+      },
+      "temperatureC": {
+        "min": 18,
+        "max": 24,
+        "sources": [
+          "tvt-z"
+        ]
+      },
+      "adult": {
+        "weightG": [
+          20,
+          30
+        ],
+        "lifespanYears": [
+          1.5,
+          4
+        ],
+        "sources": [
+          "merck-size",
+          "tvt-z"
+        ],
+        "notes": "Merck gives 3–4 years; TVT gives 1.5–3 years."
+      }
+    },
+    {
+      "id": "chinese",
+      "name": "Chinese hamster",
+      "namePlural": "Chinese hamsters",
+      "shortName": "Chinese",
+      "groupName": "Chinese",
+      "scientificName": "Cricetulus griseus",
+      "otherNames": [
+        "Chinese striped hamster"
+      ],
+      "floor": {
+        "minLengthCm": 100,
+        "minWidthCm": 50,
+        "minAreaCm2": 5000,
+        "sources": [
+          "pdsa",
+          "bluecross",
+          "woodgreen"
+        ]
+      },
+      "height": {
+        "minCm": 50,
+        "sources": [
+          "bluecross",
+          "woodgreen"
+        ]
+      },
+      "bedding": {
+        "minDepthCm": 20,
+        "burrowDepthCm": 30,
+        "sources": [
+          "bluecross",
+          "woodgreen"
+        ],
+        "notes": "PDSA gives 25 cm for all hamsters."
+      },
+      "wheel": {
+        "minDiameterCm": 25,
+        "recommendedDiameterCm": 30,
+        "sources": [
+          "bluecross",
+          "woodgreen"
+        ],
+        "notes": "Blue Cross gives 25–27 cm; Woodgreen gives 30 cm (12 in) for Syrian and Chinese hamsters."
+      },
+      "bars": {
+        "maxGapCm": 1.0,
+        "sources": [
+          "woodgreen",
+          "bluecross"
+        ]
+      },
+      "sandBath": {
+        "minLengthCm": 20,
+        "minWidthCm": 20,
+        "sources": [
+          "tvt-g",
+          "tvt-z"
+        ],
+        "notes": "TVT minimum for Syrian and dwarf hamsters, applied to Chinese hamsters."
+      },
+      "temperatureC": {
+        "min": 18,
+        "max": 24,
+        "sources": [
+          "tvt-g",
+          "tvt-z"
+        ],
+        "notes": "TVT range for Syrian and dwarf hamsters, applied to Chinese hamsters."
+      },
+      "adult": {
+        "weightG": [
+          40,
+          60
+        ],
+        "lifespanYears": [
+          2,
+          3
+        ],
+        "sources": [
+          "merck-size"
+        ]
+      },
+      "health": {
+        "note": "Prone to diabetes: avoid sugary treats.",
+        "sources": [
+          "hamingway-diabetes"
+        ]
+      }
+    }
+  ],
+  "sources": {
+    "tvt-g": {
+      "title": "Merkblatt Nr. 156 – Heimtiere: Goldhamster",
+      "publisher": "Tierärztliche Vereinigung für Tierschutz (TVT), Germany",
+      "year": 2025,
+      "url": "https://www.tierschutz-tvt.de/alle-merkblaetter-und-stellungnahmen/?no_cache=1&download=goldhamster271024-2.pdf&did=37",
+      "note": "German veterinary animal-welfare guidance for Syrian (golden) hamsters, revised April 2025: at least 100 × 50 × 50 cm, about 1 m² is better; at least 25 cm of diggable bedding, 40 cm preferred; wheel at least 30 cm; sand bath at least 20 × 20 cm; 18–24 °C."
+    },
+    "tvt-z": {
+      "title": "Merkblatt Nr. 162 – Heimtiere: Zwerghamster",
+      "publisher": "Tierärztliche Vereinigung für Tierschutz (TVT), Germany",
+      "year": 2025,
+      "url": "https://www.tierschutz-tvt.de/alle-merkblaetter-und-stellungnahmen/?no_cache=1&download=Kopie_von_Zwerghamster_271124.pdf&did=43",
+      "note": "German veterinary animal-welfare guidance for dwarf hamsters (Phodopus, including hybrids), revised April 2025: at least 100 × 50 × 50 cm; at least 20 cm of diggable bedding; wheel at least 25 cm; sand bath at least 20 × 20 cm; 18–24 °C; increased tendency to diabetes."
+    },
+    "pdsa": {
+      "title": "Hamsters as pets",
+      "publisher": "PDSA (UK veterinary charity)",
+      "url": "https://www.pdsa.org.uk/pet-help-and-advice/looking-after-your-pet/small-pets/hamsters-as-pets",
+      "note": "Cage at least 100 × 50 cm; bedding no less than 25 cm; solid wheel at least 30 cm for Syrian and 20 cm for dwarf hamsters; avoid scented bedding."
+    },
+    "bluecross": {
+      "title": "Hamster care",
+      "publisher": "Blue Cross (UK)",
+      "year": 2023,
+      "url": "https://www.bluecross.org.uk/advice/hamster/hamster-care",
+      "note": "At least 100 × 50 cm floor and 50 cm tall; bedding at least 20 cm; wheel 27–32 cm (Syrian), 22–25 cm (Campbell's, winter white), 20–22 cm (Roborovski), 25–27 cm (Chinese); bar gaps under 1 cm."
+    },
+    "woodgreen": {
+      "title": "Caring for hamsters",
+      "publisher": "Woodgreen Pets Charity (UK)",
+      "url": "https://woodgreen.org.uk/pet-advice/hamster/caring-for-hamsters/",
+      "note": "100 × 50 cm, at least 50 cm high (40 cm for dwarf hamsters); bedding at least 15 cm with a 25–30 cm digging area; 30 cm (12 in) wheel for Syrian and Chinese hamsters, 20 cm (8 in) for dwarfs; bar gaps 1 cm (Syrian, Chinese), 7 mm (dwarfs)."
+    },
+    "nc3rs": {
+      "title": "Housing and husbandry: hamster",
+      "publisher": "NC3Rs (UK)",
+      "url": "https://nc3rs.org.uk/3rs-resources/housing-and-husbandry-hamster",
+      "note": "Laboratory guidance: more than 40 cm of bedding is optimum."
+    },
+    "hamsterinfoireland": {
+      "title": "Substrate depth",
+      "publisher": "Hamster Info Ireland",
+      "url": "https://hamsterinfoireland.ie/substrate-depth/",
+      "note": "At least 20 cm for dwarf hamsters and 30 cm for Syrian hamsters."
+    },
+    "hamingway-types": {
+      "title": "Enclosure types",
+      "publisher": "The Hamingway",
+      "url": "https://www.thehamingway.com/enclosures/guide/types",
+      "note": "Maximum bar gaps: 1.0 cm Syrian, 0.8 cm dwarf, 0.6 cm Roborovski."
+    },
+    "hamingway-diabetes": {
+      "title": "Diabetes in hamsters",
+      "publisher": "The Hamingway",
+      "url": "https://www.thehamingway.com/foodmix/guide/diabetes",
+      "note": "Names Campbell's, Chinese and hybrid dwarf hamsters as prone to diabetes."
+    },
+    "hauzenberger2006": {
+      "authors": "Hauzenberger, A. R., Gebhardt-Henrich, S. G., & Steiger, A.",
+      "year": 2006,
+      "title": "The influence of bedding depth on behaviour in golden hamsters (Mesocricetus auratus)",
+      "publisher": "Applied Animal Behaviour Science, 100, 280–294",
+      "url": "https://doi.org/10.1016/j.applanim.2005.11.012",
+      "note": "45 male Syrian hamsters on 10, 40 or 80 cm of bedding: all animals on 40 and 80 cm dug burrows; on 10 cm, significantly more wire-gnawing and wheel running; at 80 cm, wire-gnawing was never observed."
+    },
+    "fischer2007": {
+      "authors": "Fischer, K., Gebhardt-Henrich, S. G., & Steiger, A.",
+      "year": 2007,
+      "title": "Behaviour of golden hamsters (Mesocricetus auratus) kept in four different cage sizes",
+      "publisher": "Animal Welfare, 16, 85–93",
+      "url": "https://doi.org/10.1017/S0962728600030967",
+      "note": "Compared 1,800, 2,500, 5,000 and 10,000 cm²; welfare seemed enhanced at 10,000 cm²."
+    },
+    "reebs2005": {
+      "authors": "Reebs, S. G., & St-Onge, P.",
+      "year": 2005,
+      "title": "Running wheel choice by Syrian hamsters",
+      "publisher": "Laboratory Animals, 39, 442–451",
+      "url": "https://doi.org/10.1258/002367705774286493",
+      "note": "Clear preference for larger wheels (35 versus 23 cm)."
+    },
+    "beaulieu2009": {
+      "authors": "Beaulieu, A., & Reebs, S. G.",
+      "year": 2009,
+      "title": "Effects of bedding material and running wheel surface on paw wounds in male and female Syrian hamsters",
+      "publisher": "Laboratory Animals, 43, 85–90",
+      "url": "https://doi.org/10.1258/la.2008.007088",
+      "note": "Wheels with rod running surfaces caused paw wounds."
+    },
+    "merck-size": {
+      "title": "Description and physical characteristics of hamsters",
+      "publisher": "Merck Veterinary Manual (pet owner version)",
+      "url": "https://www.merckvetmanual.com/all-other-pets/hamsters/description-and-physical-characteristics-of-hamsters"
+    },
+    "merck-home": {
+      "title": "Providing a home for a hamster",
+      "publisher": "Merck Veterinary Manual (pet owner version)",
+      "url": "https://www.merckvetmanual.com/all-other-pets/hamsters/providing-a-home-for-a-hamster",
+      "note": "Advises avoiding cedar and pine shavings."
+    },
+    "lafebervet": {
+      "title": "Basic information for hamsters",
+      "publisher": "LafeberVet",
+      "url": "https://lafeber.com/vet/basic-information-for-hamsters/"
+    },
+    "happyhamsters": {
+      "title": "Syrian Hamster Care Guide (2022)",
+      "publisher": "Happy Hamsters UK",
+      "url": "https://www.hamsterwelfare.com/wp-content/uploads/2021/07/2022-Syrian-Hamster-Care-Guide-Happy-Hamsters.pdf",
+      "note": "Ideal 18–24 °C; don't let the room drop below 15 °C."
+    },
+    "vesell1967": {
+      "authors": "Vesell, E. S.",
+      "year": 1967,
+      "title": "Induction of drug-metabolizing enzymes in liver microsomes of mice and rats by softwood bedding",
+      "publisher": "Science, 157, 1057–1058",
+      "url": "https://doi.org/10.1126/science.157.3792.1057"
+    },
+    "lanteigne2006": {
+      "authors": "Lanteigne, M., & Reebs, S. G.",
+      "year": 2006,
+      "title": "Preference for bedding material in Syrian hamsters",
+      "publisher": "Laboratory Animals, 40, 410–418",
+      "url": "https://doi.org/10.1258/002367706778476424",
+      "note": "Hamsters kept on pine for 50 days showed no paw or weight effects."
+    },
+    "rspca": {
+      "title": "Hamster environment",
+      "publisher": "RSPCA (UK)",
+      "url": "https://www.rspca.org.uk/adviceandwelfare/pets/rodents/hamsters/environment",
+      "note": "Prefers cages with bars or mesh sides to solid sides. TVT, by contrast, considers wire cages unsuitable."
+    },
+    "fivelittlehams": {
+      "title": "How to calculate how much bedding is needed to fill your cage",
+      "publisher": "Five Little Hams (keeper guide)",
+      "year": 2018,
+      "url": "https://fivelittlehams.wixsite.com/correcthamstercare/blank-1/2018/01/06/how-to-calculate-how-much-bedding-is-needed-to-fill-your-cage",
+      "note": "Keeper estimate: a 50 L bag may only fill about 30 L once pressed down, so buy 1.5–2× the calculated volume."
+    }
+  }
+}

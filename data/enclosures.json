@@ -1,0 +1,74 @@
+{
+  "name": "Common hamster enclosure sizes",
+  "version": "1.0.0",
+  "license": "CC-BY-4.0",
+  "creator": "JOMIZOO",
+  "notes": "Approximate inside dimensions in cm. US aquarium sizes are nominal; outside dimensions (including trim) are slightly larger, e.g. 91.9 × 46.4 × 43.0 cm for a 40-gallon breeder.",
+  "presets": [
+    {
+      "id": "small-wire",
+      "name": "Small wire cage — 60 × 40 cm",
+      "type": "wire",
+      "lengthCm": 60,
+      "widthCm": 40,
+      "heightCm": 38,
+      "baseHeightCm": 10
+    },
+    {
+      "id": "breeder-40",
+      "name": "40-gallon breeder tank — 36 × 18 in (91 × 46 cm)",
+      "type": "tank",
+      "lengthCm": 91.4,
+      "widthCm": 45.7,
+      "heightCm": 40.6
+    },
+    {
+      "id": "tank-55",
+      "name": "55-gallon tank — 48 × 13 in (122 × 33 cm)",
+      "type": "tank",
+      "lengthCm": 121.9,
+      "widthCm": 33,
+      "heightCm": 53.3
+    },
+    {
+      "id": "tank-75",
+      "name": "75-gallon tank — 48 × 18 in (122 × 46 cm)",
+      "type": "tank",
+      "lengthCm": 121.9,
+      "widthCm": 45.7,
+      "heightCm": 53.3
+    },
+    {
+      "id": "wood-100x50",
+      "name": "Wooden enclosure — 100 × 50 cm",
+      "type": "wood",
+      "lengthCm": 100,
+      "widthCm": 50,
+      "heightCm": 60
+    },
+    {
+      "id": "bin-100x55",
+      "name": "Large bin cage — 100 × 55 cm",
+      "type": "bin",
+      "lengthCm": 100,
+      "widthCm": 55,
+      "heightCm": 45
+    },
+    {
+      "id": "wood-120x60",
+      "name": "Roomy wooden enclosure — 120 × 60 cm",
+      "type": "wood",
+      "lengthCm": 120,
+      "widthCm": 60,
+      "heightCm": 70
+    }
+  ],
+  "sources": {
+    "aqueon-2023": {
+      "title": "Aquarium dimensions chart",
+      "publisher": "Aqueon",
+      "year": 2023,
+      "url": "https://www.aqueon.com/products/aquariums/-/media/F132B4285FB04BC485B095FCECCF50F0.ashx"
+    }
+  }
+}
