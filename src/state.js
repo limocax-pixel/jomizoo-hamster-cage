@@ -1,6 +1,7 @@
 // Planner state: defaults, validation and (de)serialisation to the URL so setups can be shared.
 // Pure module (no window access) so the build-time prerender can use it too.
-import { clamp, fillLimitCm } from './calc.js';
+import { decodeLayout, encodeLayout, normalizeLayout } from './layout.js';
+import { clamp, fillLimitCm } from './profile.js';
 
 export const ENCLOSURE_TYPES = ['tank', 'bin', 'wood', 'wire'];
 export const BEDDING_LOOKS = ['paper-natural', 'paper-white', 'aspen'];
@@ -33,6 +34,8 @@ export function defaultState() {
       packSizeL: 20,
     },
     wheel: { diameterCm: 30 },
+    // null = arranged automatically; otherwise positions set by dragging in the 3D view.
+    layout: null,
   };
 }
 
@@ -63,6 +66,7 @@ export function normalize(state) {
   b.allowance = clamp(num(b.allowance, d.bedding.allowance), ...LIMITS.allowance);
   b.packSizeL = clamp(num(b.packSizeL, d.bedding.packSizeL), ...LIMITS.packSizeL);
   w.diameterCm = clamp(num(w.diameterCm, d.wheel.diameterCm), ...LIMITS.wheelCm);
+  state.layout = normalizeLayout(state.layout);
   return state;
 }
 
@@ -87,6 +91,8 @@ export function stateToQuery(state) {
     lk: b.look,
   });
   if (e.type === 'wire') p.set('b', round1(e.baseHeightCm));
+  const layout = encodeLayout(state.layout);
+  if (layout) p.set('lo', layout);
   return p.toString();
 }
 
@@ -113,5 +119,6 @@ export function stateFromQuery(search, speciesIds) {
   s.bedding.allowance = orDefault(n('a') / 100, s.bedding.allowance);
   s.bedding.packSizeL = orDefault(n('p'), s.bedding.packSizeL);
   if (p.has('lk')) s.bedding.look = p.get('lk');
+  s.layout = decodeLayout(p.get('lo'));
   return normalize(s);
 }

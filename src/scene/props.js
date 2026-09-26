@@ -2,6 +2,7 @@
 // is the centre of its footprint at the bottom, plus its footprint size for layout.
 import * as THREE from 'three';
 import { WHEEL_STAND_CM } from '../calc.js';
+import { hideSizeCm, wheelWidthCm } from '../layout.js';
 
 const shadowed = (mesh) => {
   mesh.castShadow = true;
@@ -12,7 +13,7 @@ const shadowed = (mesh) => {
 /** Solid-surface wheel facing the front (+z), standing on a small base. */
 export function buildWheel(diameterCm, materials, { fits = true } = {}) {
   const r = diameterCm / 2;
-  const width = Math.min(10, Math.max(5, diameterCm * 0.3));
+  const width = wheelWidthCm(diameterCm);
   const cy = WHEEL_STAND_CM + r;
   const g = new THREE.Group();
   g.name = 'wheel';
@@ -49,9 +50,7 @@ export function buildWheel(diameterCm, materials, { fits = true } = {}) {
 
 /** Wooden multi-chamber hide sized to the hamster. */
 export function buildHide(bodyCm, materials) {
-  const L = bodyCm * 1.9;
-  const W = bodyCm * 1.15;
-  const H = bodyCm * 0.75;
+  const { x: L, z: W, y: H } = hideSizeCm(bodyCm);
   const g = new THREE.Group();
   g.name = 'hide';
   const body = shadowed(new THREE.Mesh(new THREE.BoxGeometry(L, H, W), materials.hide));

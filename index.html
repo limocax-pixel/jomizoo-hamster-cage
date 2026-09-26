@@ -2,22 +2,22 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Hamster Habitat Planner (3D) — Cage Size, Bedding Depth &amp; Bedding Calculator | JOMIZOO</title>
     <meta
       name="description"
-      content="Plan your hamster's enclosure in 3D. Check the minimum cage size for Syrian and dwarf hamsters, how deep the bedding should be, how many liters of bedding to buy and which wheel fits. Free and open source."
+      content="Plan your hamster's enclosure in 3D: drag the wheel, hide and sand bath into place and check the minimum cage size, bedding depth, liters of bedding and wheel size for Syrian and dwarf hamsters. Free and open source."
     />
     <link rel="canonical" href="<!--@site-url-->" />
     <meta name="author" content="JOMIZOO" />
-    <meta name="theme-color" content="#f6f5f2" />
+    <meta name="theme-color" content="#f6f1e8" />
     <meta name="color-scheme" content="light" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="JOMIZOO" />
     <meta property="og:title" content="Hamster Habitat Planner — plan your hamster's home in 3D" />
     <meta
       property="og:description"
-      content="Check cage size, bedding depth, bedding volume and wheel size for Syrian, dwarf and Chinese hamsters — and see the burrows deep bedding makes possible."
+      content="Arrange a hamster enclosure in 3D and check cage size, bedding depth, bedding volume and wheel size for Syrian, dwarf and Chinese hamsters."
     />
     <meta property="og:url" content="<!--@site-url-->" />
     <meta property="og:image" content="<!--@site-url-->og-image.jpg" />
@@ -35,315 +35,207 @@
     <script type="module" src="/src/main.js"></script>
   </head>
   <body>
-    <a class="skip" href="#planner">Skip to the planner</a>
-
-    <header class="site-header">
-      <div class="wrap site-header__inner">
-        <a class="brand" href="https://jomizoo.com/" rel="noopener">
-          <img src="./brand/jomizoo-logo.png" alt="JOMIZOO" width="130" height="22" />
-        </a>
-        <nav class="site-nav" aria-label="Sections">
-          <a href="#requirements">Requirements</a>
-          <a href="#how-it-works">How it works</a>
-          <a href="#faq">FAQ</a>
-          <a href="<!--@repo-url-->" rel="noopener">GitHub</a>
-        </nav>
-      </div>
-    </header>
-
     <main>
-      <section class="hero wrap">
-        <div>
-          <p class="eyebrow">Free · Open source · Made with love by JOMIZOO</p>
-          <h1>Hamster Habitat Planner</h1>
-          <p class="lead">
-            Build your hamster's home in 3D and check it against welfare guidelines: floor space, bedding depth, how
-            much bedding to buy and whether the wheel is big enough. For Syrian, dwarf and Chinese hamsters.
-          </p>
+      <section class="app" id="planner" aria-label="3D planner">
+        <div class="viewport" id="viewport" role="img" aria-label="<!--@scene-description-->">
+          <p class="viewport__status" id="viewport-status">Loading 3D…</p>
         </div>
-        <ul class="key-facts" aria-label="Key numbers">
-          <!--@key-facts-->
-        </ul>
-      </section>
 
-      <section id="planner" class="planner wrap" aria-label="Planner">
-        <div class="planner__stage">
-          <div class="stage-box">
-            <div class="viewport" id="viewport" role="img" aria-label="<!--@scene-description-->">
-              <p class="viewport__status" id="viewport-status">Loading 3D preview…</p>
+        <header class="appbar" id="appbar">
+          <a class="brand" href="https://jomizoo.com/" rel="noopener">
+            <img src="./brand/jomizoo-logo.png" alt="JOMIZOO" width="104" height="18" />
+          </a>
+          <h1 class="appbar__title">Hamster Habitat Planner</h1>
+          <div class="appbar__actions">
+            <div class="units" role="radiogroup" aria-label="Units">
+              <label><input type="radio" name="units" value="metric" checked /><span>cm</span></label>
+              <label><input type="radio" name="units" value="imperial" /><span>in</span></label>
             </div>
-            <div class="viewport__toolbar" role="toolbar" aria-label="Camera">
-              <button type="button" class="pill" data-view="iso" aria-pressed="true">3D</button>
-              <button type="button" class="pill" data-view="front" aria-pressed="false">Front · burrows</button>
-              <button type="button" class="pill" data-view="top" aria-pressed="false">Top</button>
-              <label class="pill pill--toggle"><input type="checkbox" id="labels-toggle" checked /> Labels</label>
-            </div>
-            <p class="viewport__hint" id="viewport-hint">Drag to rotate · scroll or pinch to zoom</p>
+            <button type="button" class="icon-btn" id="share" title="Copy link to this setup" aria-label="Copy link to this setup">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></svg>
+            </button>
+            <button type="button" class="icon-btn" id="snapshot" title="Save image" aria-label="Save image">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 19h14" /></svg>
+            </button>
+            <a class="icon-btn" href="#guide" title="Guide, table and sources" aria-label="Guide, table and sources">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1 1-1.1 1.8M12 17h.01" /></svg>
+            </a>
           </div>
-          <div id="verdict" aria-live="polite"><!--@verdict--></div>
-          <div class="metrics" id="metrics"><!--@metrics--></div>
+        </header>
+
+        <div class="status">
+          <button type="button" class="verdict-pill verdict-pill--<!--@verdict-level-->" id="verdict" aria-expanded="false" aria-controls="checks-sheet"><!--@verdict-pill--></button>
+          <div class="metric-chips" id="metrics"><!--@metric-chips--></div>
+        </div>
+        <div class="sheet" id="checks-sheet" hidden>
+          <ul class="checks" id="checks"><!--@checks--></ul>
         </div>
 
-        <div class="planner__side">
-          <form class="panel" id="controls" autocomplete="off">
-            <div class="panel__head">
-              <h2>Your setup</h2>
-              <div class="units" role="radiogroup" aria-label="Units">
-                <label><input type="radio" name="units" value="metric" checked /><span>cm</span></label>
-                <label><input type="radio" name="units" value="imperial" /><span>in</span></label>
-              </div>
+        <div class="viewtools" role="toolbar" aria-label="Camera">
+          <button type="button" class="icon-btn" data-view="iso" aria-pressed="true" title="3D view" aria-label="3D view">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 7.5v9L12 21l-8-4.5v-9L12 3ZM4 7.5l8 4.5 8-4.5M12 12v9" /></svg>
+          </button>
+          <button type="button" class="icon-btn" data-view="front" aria-pressed="false" title="Front view: see the burrows" aria-label="Front view">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v14H3zM3 9h18" /><path d="M7 9v3a2.5 2.5 0 0 0 5 0V9M16 9v7" /></svg>
+          </button>
+          <button type="button" class="icon-btn" data-view="top" aria-pressed="false" title="Top view" aria-label="Top view">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M4 12h16M12 4v16" /></svg>
+          </button>
+          <button type="button" class="icon-btn" id="labels-toggle" aria-pressed="true" title="Labels" aria-label="Labels">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8L3 12Z" /><circle cx="7.5" cy="7.5" r="1.4" /></svg>
+          </button>
+          <button type="button" class="icon-btn" id="reset" title="Reset" aria-label="Reset">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7M4 4v5h5" /></svg>
+          </button>
+        </div>
+
+        <form class="panels" id="controls" autocomplete="off">
+          <section class="panel" id="panel-hamster" data-panel="hamster" hidden aria-label="Hamster">
+            <div class="chips-select" id="species"><!--@species-options--></div>
+            <p class="facts" id="species-facts"><!--@species-facts--></p>
+          </section>
+
+          <section class="panel" id="panel-cage" data-panel="cage" hidden aria-label="Enclosure">
+            <div class="segmented" id="enclosure-type">
+              <label><input type="radio" name="type" value="tank" checked /><span>Tank</span></label>
+              <label><input type="radio" name="type" value="bin" /><span>Bin</span></label>
+              <label><input type="radio" name="type" value="wood" /><span>Wood</span></label>
+              <label><input type="radio" name="type" value="wire" /><span>Wire</span></label>
             </div>
-
-            <fieldset class="group">
-              <legend>Hamster</legend>
-              <div class="chips" id="species"><!--@species-options--></div>
-              <p class="facts" id="species-facts"><!--@species-facts--></p>
-            </fieldset>
-
-            <fieldset class="group">
-              <legend>Enclosure</legend>
-              <div class="segmented" id="enclosure-type">
-                <label><input type="radio" name="type" value="tank" checked /><span>Glass tank</span></label>
-                <label><input type="radio" name="type" value="bin" /><span>Bin cage</span></label>
-                <label><input type="radio" name="type" value="wood" /><span>Wooden</span></label>
-                <label><input type="radio" name="type" value="wire" /><span>Wire cage</span></label>
-              </div>
-              <label class="select">
-                <span class="sr-only">Common enclosure sizes</span>
-                <select id="preset"><!--@preset-options--></select>
-              </label>
-              <div class="field" data-key="length">
-                <div class="field__top">
-                  <label for="length-num">Length</label>
-                  <span class="field__value"><input id="length-num" type="number" inputmode="decimal" value="100" /><span class="unit" data-unit="len">cm</span></span>
-                </div>
-                <input type="range" aria-label="Length" value="100" />
-              </div>
-              <div class="field" data-key="width">
-                <div class="field__top">
-                  <label for="width-num">Width (front to back)</label>
-                  <span class="field__value"><input id="width-num" type="number" inputmode="decimal" value="50" /><span class="unit" data-unit="len">cm</span></span>
-                </div>
-                <input type="range" aria-label="Width" value="50" />
-              </div>
-              <div class="field" data-key="height">
-                <div class="field__top">
-                  <label for="height-num">Height</label>
-                  <span class="field__value"><input id="height-num" type="number" inputmode="decimal" value="60" /><span class="unit" data-unit="len">cm</span></span>
-                </div>
-                <input type="range" aria-label="Height" value="60" />
-              </div>
-              <div class="field" data-key="base" hidden>
-                <div class="field__top">
-                  <label for="base-num">Plastic base height</label>
-                  <span class="field__value"><input id="base-num" type="number" inputmode="decimal" value="15" /><span class="unit" data-unit="len">cm</span></span>
-                </div>
-                <input type="range" aria-label="Plastic base height" value="15" />
-                <p class="hint">Bedding can only be as deep as the base of a wire cage.</p>
-              </div>
-            </fieldset>
-
-            <fieldset class="group">
-              <legend>Bedding</legend>
-              <div class="field" data-key="depth">
-                <div class="field__top">
-                  <label for="depth-num">Depth everywhere</label>
-                  <span class="field__value"><input id="depth-num" type="number" inputmode="decimal" value="25" /><span class="unit" data-unit="len">cm</span></span>
-                </div>
-                <input type="range" aria-label="Bedding depth" value="25" />
-              </div>
-              <label class="switch"><input type="checkbox" id="deep-enabled" checked /><span>Add a deep burrowing area</span></label>
-              <div id="deep-fields">
-                <div class="field" data-key="deepDepth">
-                  <div class="field__top">
-                    <label for="deepDepth-num">Burrowing area depth</label>
-                    <span class="field__value"><input id="deepDepth-num" type="number" inputmode="decimal" value="40" /><span class="unit" data-unit="len">cm</span></span>
-                  </div>
-                  <input type="range" aria-label="Burrowing area depth" value="40" />
-                </div>
-                <div class="field" data-key="deepShare">
-                  <div class="field__top">
-                    <label for="deepShare-num">Share of the floor</label>
-                    <span class="field__value"><input id="deepShare-num" type="number" inputmode="decimal" value="30" /><span class="unit">%</span></span>
-                  </div>
-                  <input type="range" aria-label="Share of the floor with deep bedding" value="30" />
-                </div>
-              </div>
-              <label class="select">
-                <span>Bedding type (look only)</span>
-                <select id="look">
-                  <option value="paper-natural">Paper, natural</option>
-                  <option value="paper-white">Paper, white</option>
-                  <option value="aspen">Aspen shavings</option>
-                </select>
-              </label>
-            </fieldset>
-
-            <fieldset class="group">
-              <legend>Wheel</legend>
-              <div class="field" data-key="wheel">
-                <div class="field__top">
-                  <label for="wheel-num">Wheel diameter</label>
-                  <span class="field__value"><input id="wheel-num" type="number" inputmode="decimal" value="30" /><span class="unit" data-unit="len">cm</span></span>
-                </div>
-                <input type="range" aria-label="Wheel diameter" value="30" />
-              </div>
-            </fieldset>
-
-            <fieldset class="group">
-              <legend>Buying bedding</legend>
-              <div class="field" data-key="allowance">
-                <div class="field__top">
-                  <label for="allowance-num">Extra for compaction</label>
-                  <span class="field__value"><input id="allowance-num" type="number" inputmode="decimal" value="50" /><span class="unit">%</span></span>
-                </div>
-                <input type="range" aria-label="Extra bedding for compaction" value="50" />
-                <p class="hint">Pressed-down bedding takes less space. Keepers report needing 1.5–2× the calculated volume.</p>
-              </div>
-              <div class="field" data-key="pack">
-                <div class="field__top">
-                  <label for="pack-num">Pack size</label>
-                  <span class="field__value"><input id="pack-num" type="number" inputmode="decimal" value="20" /><span class="unit">L</span></span>
-                </div>
-                <p class="hint">Use the expanded volume printed on the pack, not the compressed size.</p>
-              </div>
-            </fieldset>
-          </form>
-
-          <section class="panel" aria-labelledby="checks-title">
-            <h2 id="checks-title">Your setup, checked</h2>
-            <ul class="checks" id="checks"><!--@checks--></ul>
-            <div class="actions">
-              <button type="button" class="btn btn--brand" id="share">Copy link to this setup</button>
-              <button type="button" class="btn" id="snapshot">Save image</button>
-              <button type="button" class="btn btn--light" id="reset">Reset</button>
+            <select id="preset" aria-label="Common sizes"><!--@preset-options--></select>
+            <div class="field" data-key="length">
+              <label for="length-num">Length</label>
+              <input type="range" aria-label="Length" />
+              <span class="field__value"><input id="length-num" type="number" inputmode="decimal" /><span class="unit" data-unit="len">cm</span></span>
+            </div>
+            <div class="field" data-key="width">
+              <label for="width-num">Width</label>
+              <input type="range" aria-label="Width" />
+              <span class="field__value"><input id="width-num" type="number" inputmode="decimal" /><span class="unit" data-unit="len">cm</span></span>
+            </div>
+            <div class="field" data-key="height">
+              <label for="height-num">Height</label>
+              <input type="range" aria-label="Height" />
+              <span class="field__value"><input id="height-num" type="number" inputmode="decimal" /><span class="unit" data-unit="len">cm</span></span>
+            </div>
+            <div class="field" data-key="base" hidden>
+              <label for="base-num" title="Height of the plastic base: bedding can't be deeper">Base</label>
+              <input type="range" aria-label="Plastic base height" />
+              <span class="field__value"><input id="base-num" type="number" inputmode="decimal" /><span class="unit" data-unit="len">cm</span></span>
             </div>
           </section>
-        </div>
+
+          <section class="panel" id="panel-bedding" data-panel="bedding" hidden aria-label="Bedding">
+            <div class="field" data-key="depth">
+              <label for="depth-num">Depth</label>
+              <input type="range" aria-label="Bedding depth" />
+              <span class="field__value"><input id="depth-num" type="number" inputmode="decimal" /><span class="unit" data-unit="len">cm</span></span>
+            </div>
+            <label class="switch"><input type="checkbox" id="deep-enabled" checked /><span>Deep burrowing area</span></label>
+            <div id="deep-fields">
+              <div class="field" data-key="deepDepth">
+                <label for="deepDepth-num">Deep</label>
+                <input type="range" aria-label="Burrowing area depth" />
+                <span class="field__value"><input id="deepDepth-num" type="number" inputmode="decimal" /><span class="unit" data-unit="len">cm</span></span>
+              </div>
+              <div class="field" data-key="deepShare">
+                <label for="deepShare-num">Area</label>
+                <input type="range" aria-label="Share of the floor with deep bedding" />
+                <span class="field__value"><input id="deepShare-num" type="number" inputmode="decimal" /><span class="unit">%</span></span>
+              </div>
+            </div>
+            <div class="segmented segmented--3" id="look">
+              <label><input type="radio" name="look" value="paper-natural" checked /><span>Paper</span></label>
+              <label><input type="radio" name="look" value="paper-white" /><span>White</span></label>
+              <label><input type="radio" name="look" value="aspen" /><span>Aspen</span></label>
+            </div>
+          </section>
+
+          <section class="panel" id="panel-wheel" data-panel="wheel" hidden aria-label="Wheel">
+            <div class="field" data-key="wheel">
+              <label for="wheel-num">Ø</label>
+              <input type="range" aria-label="Wheel diameter" />
+              <span class="field__value"><input id="wheel-num" type="number" inputmode="decimal" /><span class="unit" data-unit="len">cm</span></span>
+            </div>
+          </section>
+
+          <section class="panel" id="panel-buy" data-panel="buy" hidden aria-label="Buying bedding">
+            <div class="field" data-key="allowance">
+              <label for="allowance-num" title="Pressed-down bedding takes less space: keepers report needing 1.5–2× the calculated volume">Extra</label>
+              <input type="range" aria-label="Extra bedding for compaction" />
+              <span class="field__value"><input id="allowance-num" type="number" inputmode="decimal" /><span class="unit">%</span></span>
+            </div>
+            <div class="field field--number" data-key="pack">
+              <label for="pack-num" title="Expanded volume printed on the pack">Pack</label>
+              <span class="field__value"><input id="pack-num" type="number" inputmode="decimal" /><span class="unit">L</span></span>
+            </div>
+          </section>
+        </form>
+
+        <nav class="dock" id="dock" aria-label="Settings">
+          <button type="button" data-open="hamster" aria-expanded="false" aria-controls="panel-hamster">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13.5" r="7" /><circle cx="6.5" cy="6.5" r="2.3" /><circle cx="17.5" cy="6.5" r="2.3" /><path d="M9.8 12.5h.01M14.2 12.5h.01M11 16h2" /></svg>
+            <span>Hamster</span>
+          </button>
+          <button type="button" data-open="cage" aria-expanded="false" aria-controls="panel-cage">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M4 6v13h16V6M4 13h16" /></svg>
+            <span>Cage</span>
+          </button>
+          <button type="button" data-open="bedding" aria-expanded="false" aria-controls="panel-bedding">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 4 9 5-9 5-9-5 9-5Z" /><path d="m3 14 9 5 9-5" /></svg>
+            <span>Bedding</span>
+          </button>
+          <button type="button" data-open="wheel" aria-expanded="false" aria-controls="panel-wheel">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="10.5" r="7" /><circle cx="12" cy="10.5" r="1.6" /><path d="M9 21h6M12 17.5V21" /></svg>
+            <span>Wheel</span>
+          </button>
+          <button type="button" data-open="buy" aria-expanded="false" aria-controls="panel-buy">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></svg>
+            <span>Buy</span>
+          </button>
+        </nav>
+
+        <p class="app-hint" id="hint">Drag items to move them · drag the scene to rotate</p>
+        <a class="scroll-cue" href="#guide" aria-label="Guide below">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+        </a>
       </section>
 
-      <section id="requirements" class="content wrap">
-        <h2>Hamster cage size and bedding depth by species</h2>
-        <p>
-          The minimums the planner checks against. Each value links to its source; where guidelines differ, the
-          sources list explains which value we used.
-        </p>
-        <!--@species-table-->
-        <p class="note">
-          Minimums are a floor, not a goal: hamsters use every extra centimeter of space and depth. Only unbroken floor
-          space counts — platforms, shelves and extra levels don't add to it.
-        </p>
-      </section>
+      <section class="guide" id="guide">
+        <div class="wrap">
+          <h2>Hamster cage requirements by species</h2>
+          <ul class="key-facts" aria-label="Key numbers"><!--@key-facts--></ul>
+          <!--@species-table-->
 
-      <section class="content wrap two-col">
-        <article id="bedding-depth">
-          <h2>How deep should hamster bedding be?</h2>
-          <p>
-            Hamsters are burrowing animals. In the wild they live underground in burrows with separate chambers for
-            sleeping and for storing food, and pet hamsters keep the same instinct.
-          </p>
-          <p>
-            A controlled study kept 45 male Syrian hamsters on 10, 40 or 80 cm of bedding. Every hamster on 40 or 80 cm
-            dug burrows. Those on 10 cm gnawed the cage wire significantly more and ran more in their wheels, and at 80
-            cm wire-gnawing was never seen. The authors concluded that at least 40 cm of bedding seemed to enhance
-            welfare (Hauzenberger, Gebhardt-Henrich &amp; Steiger, 2006). German veterinary guidance (TVT) asks for a
-            diggable layer of at least 25 cm for Syrian hamsters and prefers 40 cm.
-          </p>
-          <p>
-            That's why the planner checks a minimum depth across the whole floor and highlights a deeper burrowing area.
-            You don't have to fill the whole enclosure that deep: piling one section higher gives your hamster room to
-            build a real burrow and keeps the amount of bedding manageable. Switch the 3D view to <em>Front</em> to see
-            the tunnels, nest and food store appear as the bedding gets deeper.
-          </p>
-        </article>
-        <article id="bedding-volume">
-          <h2>How much bedding do I need?</h2>
-          <p class="formula">liters = length × width × average depth (cm) ÷ 1,000</p>
-          <p>
-            Working in inches? Multiply length × width × depth and divide the cubic inches by 61.02 to get liters.
-          </p>
-          <p>
-            With a deeper burrowing area, use the average depth: <em>standard depth + (burrowing depth − standard
-            depth) × share of the floor</em>. For a 100 × 50 cm enclosure with 25 cm everywhere and 40 cm on 30% of the
-            floor, the average is 29.5 cm, so you need 147.5 L of settled bedding.
-          </p>
-          <p>
-            Bedding compacts when it is pressed down to hold tunnels. Keepers report needing 1.5–2× the calculated volume
-            in pack liters, so the planner adds 50% by default — adjust it to your bedding. Then divide by the expanded
-            volume printed on the pack.
-          </p>
-        </article>
-      </section>
+          <h2 id="faq">Questions</h2>
+          <!--@faq-->
 
-      <section class="content wrap two-col">
-        <article id="wheel-size">
-          <h2>What size wheel does my hamster need?</h2>
-          <p>
-            A wheel is big enough when your hamster's back stays straight while running (TVT). If the back curves upward,
-            the wheel is too small. Bigger is better: given the choice, Syrian hamsters preferred a 35 cm wheel to a 23
-            cm one (Reebs &amp; St-Onge, 2005). Choose a solid running surface — wheels with rods caused paw wounds in a
-            study (Beaulieu &amp; Reebs, 2009).
+          <h2 id="how-it-works">How the planner calculates</h2>
+          <ol class="steps">
+            <li>Floor space = length × width, against the species minimum; platforms don't count.</li>
+            <li>Bedding depth across the floor, plus a deeper burrowing area at the species burrowing depth.</li>
+            <li>Wheel diameter, and whether bedding under the wheel + 2 cm stand + wheel fits under the lid.</li>
+            <li>Bedding volume = length × width × average depth ÷ 1,000 liters, plus the compaction allowance.</li>
+          </ol>
+          <p class="note">
+            Everything runs in your browser. The numbers are open data:
+            <a href="./data/species.json">data/species.json</a> (v<!--@data-version-->, CC BY 4.0).
           </p>
-          <p>
-            Check that the wheel still fits once the bedding is in: the planner adds the bedding depth, a 2 cm stand and
-            the wheel diameter and compares that with the enclosure height.
-          </p>
-        </article>
-        <article id="enclosure-types">
-          <h2>Tank, bin cage, wooden enclosure or wire cage?</h2>
-          <ul class="plain">
-            <li><strong>Glass tanks</strong> hold deep bedding and let you watch the burrows through the glass. Use a mesh lid. Tank sizes are outside measurements: a 40-gallon breeder (about 91 × 46 cm) is below the 100 × 50 cm minimum, and a 75-gallon (about 122 × 46 cm) has enough area but is narrower than 50 cm.</li>
-            <li><strong>Bin cages</strong> (large storage bins with mesh windows) are affordable, light and hold deep bedding well.</li>
-            <li><strong>Wooden enclosures</strong> with an acrylic front are easy to build to any size and hold deep bedding.</li>
-            <li><strong>Wire cages</strong> divide opinion: German veterinary guidance (TVT) considers them unsuitable, while the RSPCA prefers barred sides for ventilation. Bedding can only be as deep as the plastic base, and most pet-store models are below the minimum floor space.</li>
-          </ul>
-        </article>
-      </section>
 
-      <section id="how-it-works" class="content wrap">
-        <h2>How this planner works</h2>
-        <ol class="steps">
-          <li><strong>Floor space</strong> is length × width, compared with the species minimum. Platforms don't count. If the area is enough but the shortest side is under the minimum width, you get a warning.</li>
-          <li><strong>Height</strong> must meet the species minimum.</li>
-          <li><strong>Bedding depth</strong> across the floor must meet the species minimum. A deeper area counts as a full burrowing area at the depth listed in the table: 40 cm for Syrian hamsters, the depth at which every hamster in the 2006 study dug burrows.</li>
-          <li><strong>Wheel</strong>: the diameter must meet the species minimum, and bedding depth + 2 cm stand + wheel diameter must fit inside the enclosure height.</li>
-          <li><strong>Bedding volume</strong> uses the formula above, plus the compaction allowance you choose (50% by default). Packs are rounded up.</li>
-          <li><strong>Wire cages</strong>: bedding can't be deeper than the plastic base.</li>
-        </ol>
-        <p>
-          The 3D view is drawn to scale, including the hamster. Everything runs in your browser; nothing is uploaded.
-          The underlying numbers are open data:
-          <a href="./data/species.json">data/species.json</a> (version <!--@data-version-->, CC BY 4.0) — reuse them with
-          credit.
-        </p>
-      </section>
+          <details class="sources-box" id="sources">
+            <summary>Sources</summary>
+            <ol class="sources"><!--@sources--></ol>
+          </details>
 
-      <section id="faq" class="content wrap">
-        <h2>Frequently asked questions</h2>
-        <!--@faq-->
-      </section>
-
-      <section id="sources" class="content wrap">
-        <h2>Sources</h2>
-        <ol class="sources"><!--@sources--></ol>
-      </section>
-
-      <section class="about wrap" id="about">
-        <img src="./brand/jomizoo-icon.png" alt="" width="72" height="72" />
-        <div>
-          <h2>About JOMIZOO</h2>
-          <p>
-            JOMIZOO is a small-pet brand that makes natural paper and aspen bedding for hamsters and other small
-            animals. All of our products come from nature, and we believe small pets deserve big love and healthy
-            homes. We built this planner to make good hamster care easier, whichever bedding you use.
-          </p>
-          <p>
-            The planner is open source under the
-            <a href="<!--@repo-url-->/blob/main/LICENSE" rel="noopener">MIT license</a>, and its data is
-            <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>. Found an error or have
-            a better source? <a href="<!--@repo-url-->/issues" rel="noopener">Open an issue on GitHub</a>.
-          </p>
-          <p class="muted">Cite as: JOMIZOO (2026). <em>Hamster Habitat Planner</em>. <!--@site-url--></p>
+          <div class="about">
+            <img src="./brand/jomizoo-icon.png" alt="" width="56" height="56" loading="lazy" />
+            <p>
+              Made with love by <a href="https://jomizoo.com/" rel="noopener">JOMIZOO</a>, a small-pet brand making
+              natural paper and aspen bedding. Open source:
+              <a href="<!--@repo-url-->" rel="noopener">code on GitHub</a> (MIT), data CC BY 4.0. Cite as: JOMIZOO
+              (2026). <em>Hamster Habitat Planner</em>. <!--@site-url-->
+            </p>
+          </div>
         </div>
       </section>
     </main>
@@ -351,12 +243,8 @@
     <footer class="site-footer">
       <div class="wrap">
         <p>
-          © 2026 <a href="https://jomizoo.com/" rel="noopener">JOMIZOO</a> · Code MIT · Data CC BY 4.0 · Last updated
-          <time datetime="<!--@updated-->"><!--@updated--></time>
-        </p>
-        <p>
-          This planner gives general husbandry guidance, not veterinary advice. If your hamster seems unwell, see a vet
-          experienced with small mammals.
+          © 2026 JOMIZOO · Updated <time datetime="<!--@updated-->"><!--@updated--></time> · General husbandry guidance,
+          not veterinary advice.
         </p>
       </div>
     </footer>

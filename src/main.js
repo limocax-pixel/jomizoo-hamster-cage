@@ -3,7 +3,7 @@ import speciesData from '../data/species.json';
 import enclosureData from '../data/enclosures.json';
 import { evaluate, fillLimitCm } from './calc.js';
 import {
-  ENCLOSURE_NAMES, describeScene, renderChecks, renderMetrics, renderSpeciesFacts, renderVerdict, sceneText,
+  ENCLOSURE_NAMES, describeScene, renderChecks, renderMetricChips, renderSpeciesFacts, renderVerdictPill, sceneText,
   verdictText,
 } from './render.js';
 import { LIMITS, defaultState, normalize, stateFromQuery, stateToQuery } from './state.js';
@@ -76,11 +76,10 @@ function syncField(key) {
   const root = $(`.field[data-key="${key}"]`);
   const [min, max] = def.range(state).map((v) => toDisplay(def.kind, v));
   const value = toDisplay(def.kind, def.get(state));
-  const step = stepFor(def.kind);
   for (const input of $$('input', root)) {
     input.min = String(round(min, def.kind));
     input.max = String(round(max, def.kind));
-    input.step = String(step);
+    input.step = String(stepFor(def.kind));
     if (input.type === 'range' || document.activeElement !== input) input.value = String(round(value, def.kind));
   }
   for (const unit of $$('[data-unit="len"]', root)) unit.textContent = lenUnit(state.units);
@@ -91,10 +90,10 @@ function syncInputs() {
   for (const input of $$('input[name="species"]')) input.checked = input.value === state.species;
   for (const input of $$('input[name="type"]')) input.checked = input.value === state.enclosure.type;
   for (const input of $$('input[name="units"]')) input.checked = input.value === state.units;
+  for (const input of $$('input[name="look"]')) input.checked = input.value === state.bedding.look;
   $('#deep-enabled').checked = state.bedding.deepZone.enabled;
   $('#deep-fields').hidden = !state.bedding.deepZone.enabled;
   $('.field[data-key="base"]').hidden = state.enclosure.type !== 'wire';
-  $('#look').value = state.bedding.look;
 }
 
 // ---------------------------------------------------------------------------
@@ -105,18 +104,20 @@ let scene = null;
 let sceneFrame = 0;
 let latest = null;
 
-function refresh({ inputs = true, share = true } = {}) {
+function refresh({ inputs = true, share = true, rebuild = true } = {}) {
   normalize(state);
   const sp = species();
   const results = evaluate(state, sp);
   latest = { results, sp };
   if (inputs) syncInputs();
-  $('#verdict').innerHTML = renderVerdict(results, sp, state.units);
-  $('#metrics').innerHTML = renderMetrics(results, state.units);
+  const pill = $('#verdict');
+  pill.className = `verdict-pill verdict-pill--${results.verdict.level}`;
+  pill.innerHTML = renderVerdictPill(results);
+  $('#metrics').innerHTML = renderMetricChips(results, state.units);
   $('#checks').innerHTML = renderChecks(results, sp, state.units, state);
   $('#species-facts').innerHTML = renderSpeciesFacts(sp, state.units);
   $('#viewport').setAttribute('aria-label', describeScene(state, results, sp, state.units));
-  scheduleScene();
+  if (rebuild) scheduleScene();
   if (share) scheduleUrl();
 }
 
@@ -135,8 +136,54 @@ function scheduleUrl() {
   urlTimer = setTimeout(() => history.replaceState(null, '', `?${stateToQuery(state)}`), 250);
 }
 
+// A short hint that fades after a few seconds or on first interaction.
+const hint = $('#hint');
+const hideHint = () => hint.classList.add('is-hidden');
+setTimeout(hideHint, 6000);
+$('#viewport').addEventListener('pointerdown', hideHint, { once: true });
+
 // ---------------------------------------------------------------------------
-// Events
+// Panels: one at a time, opened from the dock
+// ---------------------------------------------------------------------------
+
+function openPanel(name) {
+  for (const button of $$('[data-open]')) {
+    const open = button.dataset.open === name;
+    button.setAttribute('aria-expanded', String(open));
+  }
+  for (const panel of $$('.panel')) panel.hidden = panel.dataset.panel !== name;
+  if (name) {
+    toggleSheet(false);
+    hideHint();
+  }
+  updateInsets();
+}
+
+for (const button of $$('[data-open]')) {
+  button.addEventListener('click', () => {
+    const open = button.getAttribute('aria-expanded') === 'true';
+    openPanel(open ? null : button.dataset.open);
+  });
+}
+
+function toggleSheet(force) {
+  const pill = $('#verdict');
+  const open = force ?? pill.getAttribute('aria-expanded') !== 'true';
+  pill.setAttribute('aria-expanded', String(open));
+  $('#checks-sheet').hidden = !open;
+  if (open) openPanel(null);
+}
+$('#verdict').addEventListener('click', () => toggleSheet());
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    openPanel(null);
+    toggleSheet(false);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Inputs
 // ---------------------------------------------------------------------------
 
 for (const [key, def] of Object.entries(FIELDS)) {
@@ -212,23 +259,27 @@ for (const button of $$('[data-view]')) {
   });
 }
 
-$('#labels-toggle').addEventListener('change', (event) => scene?.setLabelsVisible(event.target.checked));
+$('#labels-toggle').addEventListener('click', (event) => {
+  const on = event.currentTarget.getAttribute('aria-pressed') !== 'true';
+  event.currentTarget.setAttribute('aria-pressed', String(on));
+  scene?.setLabelsVisible(on);
+});
 
 function toast(message) {
   const el = $('#toast');
   el.textContent = message;
   el.hidden = false;
   clearTimeout(toast.timer);
-  toast.timer = setTimeout(() => (el.hidden = true), 2600);
+  toast.timer = setTimeout(() => (el.hidden = true), 2400);
 }
 
 $('#share').addEventListener('click', async () => {
   history.replaceState(null, '', `?${stateToQuery(state)}`);
   try {
     await navigator.clipboard.writeText(location.href);
-    toast('Link copied — anyone with it sees this exact setup.');
+    toast('Link copied');
   } catch {
-    toast('Copy the address bar to share this setup.');
+    toast('Copy the address bar to share');
   }
 });
 
@@ -285,7 +336,7 @@ async function composeShareImage() {
 }
 
 $('#snapshot').addEventListener('click', async () => {
-  if (!scene) return toast('The 3D preview is not available in this browser.');
+  if (!scene) return toast('3D preview not available');
   const canvas = await composeShareImage();
   canvas.toBlob((blob) => {
     if (!blob) return;
@@ -300,12 +351,22 @@ $('#snapshot').addEventListener('click', async () => {
 $('#reset').addEventListener('click', () => {
   state = defaultState();
   $('#preset').value = '';
+  scene?.select(null);
   refresh({ share: false });
   history.replaceState(null, '', location.pathname);
 });
 
+// Citations link into the collapsed sources list: open it when one is followed.
+function revealHashTarget() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const box = id ? document.getElementById(id)?.closest('details') : null;
+  if (box && !box.open) box.open = true;
+}
+window.addEventListener('hashchange', revealHashTarget);
+revealHashTarget();
+
 // ---------------------------------------------------------------------------
-// 3D preview (lazy-loaded so the page and the checks work without it)
+// 3D stage (lazy-loaded so the page and the checks work without it)
 // ---------------------------------------------------------------------------
 
 function supportsWebGL() {
@@ -317,28 +378,48 @@ function supportsWebGL() {
   }
 }
 
+/** Keep the cage framed between the top bar, the dock and (on wide screens) an open side panel. */
+function updateInsets() {
+  if (!scene) return;
+  const app = $('#planner').getBoundingClientRect();
+  const bar = $('#appbar').getBoundingClientRect();
+  const status = $('.status').getBoundingClientRect();
+  const dock = $('#dock').getBoundingClientRect();
+  const panel = $$('.panel').find((p) => !p.hidden)?.getBoundingClientRect();
+  const wide = matchMedia('(min-width: 900px)').matches;
+  const tools = $('.viewtools').getBoundingClientRect();
+  const toolsOnTop = tools.bottom < app.top + app.height / 3; // phones: a row under the top bar
+  scene.setInsets({
+    top: Math.max(bar.bottom, status.bottom, toolsOnTop ? tools.bottom : 0) - app.top + 8,
+    // On phones the open panel is a bottom sheet: frame the cage above it.
+    bottom: app.bottom - (panel && !wide ? panel.top : dock.top) + 8,
+    left: panel && wide ? panel.right - app.left : 0,
+  });
+}
+
 async function initScene() {
   const status = $('#viewport-status');
   if (!supportsWebGL()) {
-    status.textContent = 'The 3D preview needs WebGL, which this browser doesn’t provide. All checks below still work.';
+    status.textContent = 'The 3D view needs WebGL. The checks still work — tap the status above.';
     return;
   }
   try {
     const { createScene } = await import('./scene/scene.js');
     scene = createScene($('#viewport'), { reducedMotion });
     status.remove();
-    scene.setLabelsVisible($('#labels-toggle').checked);
+    scene.onLayoutChange = (layout, { final }) => {
+      state.layout = layout;
+      refresh({ inputs: false, rebuild: final });
+    };
+    updateInsets();
+    new ResizeObserver(updateInsets).observe($('#planner'));
     scheduleScene();
     window.__planner = { scene, composeShareImage, getState: () => structuredClone(state) };
   } catch (error) {
     console.error(error);
-    status.textContent = 'The 3D preview could not load. All checks below still work.';
+    status.textContent = 'The 3D view could not load. The checks still work — tap the status above.';
   }
 }
-
-const hideHint = () => $('#viewport-hint')?.classList.add('is-hidden');
-$('#viewport').addEventListener('pointerdown', hideHint, { once: true });
-$('#viewport').addEventListener('wheel', hideHint, { once: true, passive: true });
 
 refresh({ share: false });
 initScene();

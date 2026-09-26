@@ -55,14 +55,9 @@ export function renderSpeciesOptions(list, selectedId) {
 
 export function renderSpeciesFacts(sp, units) {
   const a = sp.adult;
-  const parts = [
-    `<em>${esc(sp.scientificName)}</em>`,
-    `adult ${fmtRange(a.weightG, 'g')}`,
-    `lives ${fmtRange(a.lifespanYears, 'years', 1)}`,
-  ];
-  if (sp.temperatureC) parts.push(`room ${fmtTempRange(sp.temperatureC, units)}`);
-  if (sp.health) parts.push(`<strong>${esc(sp.health.note)}</strong>`);
-  return parts.join(' · ');
+  const parts = [fmtRange(a.weightG, 'g'), fmtRange(a.lifespanYears, 'yrs', 1), fmtTempRange(sp.temperatureC, units)];
+  const badge = sp.health ? ` <span class="badge" title="${esc(sp.health.note)}">Diabetes-prone</span>` : '';
+  return `${parts.join(' · ')}${badge}`;
 }
 
 export function renderPresetOptions(presets) {
@@ -206,42 +201,41 @@ function checkText(check, r, sp, units, state) {
   }
 }
 
-export function renderMetrics(r, units) {
-  const { floor, depth, volume } = r;
-  const tile = (label, value, sub, status = '') =>
-    `<div class="metric${status ? ` metric--${status}` : ''}"><span class="metric__label">${label}</span><strong class="metric__value">${value}</strong><span class="metric__sub">${sub}</span></div>`;
-  const packs = volume.packs
-    ? tile('Packs to buy', `${fmtNumber(volume.packs, 0)} × ${fmtLiters(volume.packSizeL)}`, 'expanded volume per pack')
-    : '';
+const CHIP_ICONS = {
+  area: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="1.5"/></svg>',
+  bag: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
+  packs: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8l8-4 8 4v8l-8 4-8-4V8Z"/><path d="M4 8l8 4 8-4M12 12v8"/></svg>',
+};
+
+/** Three compact numbers over the 3D view: floor space, bedding to buy, packs. */
+export function renderMetricChips(r, units) {
+  const { floor, volume } = r;
+  const chip = (icon, text, label, status = '') =>
+    `<span class="chip${status ? ` chip--${status}` : ''}" title="${label}" aria-label="${label}: ${esc(text)}">${CHIP_ICONS[icon]}${esc(text)}</span>`;
   return [
-    tile('Floor space', fmtArea(floor.areaCm2, units), `minimum ${fmtArea(floor.minAreaCm2, units)}`, floor.status),
-    tile(
-      'Bedding to buy',
-      fmtVolume(volume.buyL, units),
-      `${fmtLiters(volume.settledL)} settled + ${fmtPercent(volume.allowance)} for compaction`,
-    ),
-    packs,
-    tile(
-      'Deepest bedding',
-      fmtLen(depth.maxCm, units),
-      depth.deepCm ? `${fmtLen(depth.standardCm, units)} elsewhere` : 'even depth',
-      depth.burrow === 'full' ? 'great' : '',
-    ),
+    chip('area', fmtArea(floor.areaCm2, units), 'Floor space', floor.status),
+    chip('bag', fmtLiters(volume.buyL), `Bedding to buy (${fmtLiters(volume.settledL)} settled + ${fmtPercent(volume.allowance)})`),
+    volume.packs ? chip('packs', `${fmtNumber(volume.packs, 0)} × ${fmtLiters(volume.packSizeL)}`, 'Packs to buy') : '',
   ].join('');
 }
 
+/** Collapsible checklist: one short line per check, details on tap. */
 export function renderChecks(r, sp, units, state) {
   return r.checks
     .map((check) => {
       const { title, detail } = checkText(check, r, sp, units, state);
-      return `<li class="check check--${check.status}"><span class="check__icon" aria-hidden="true">${ICONS[check.status]}</span><div><strong>${esc(title)}</strong><p>${esc(detail)}</p></div></li>`;
+      return `<li class="check check--${check.status}"><details><summary><span class="check__icon" aria-hidden="true">${ICONS[check.status]}</span><span>${esc(title)}</span></summary><p>${esc(detail)}</p></details></li>`;
     })
     .join('');
 }
 
-export function renderVerdict(r, sp, units) {
-  const v = verdictText(r, sp, units);
-  return `<div class="verdict verdict--${v.level}"><strong>${esc(v.title)}</strong><span>${esc(v.text)}</span></div>`;
+const VERDICT_SHORT = { excellent: ['★', 'Excellent'], meets: ['✓', 'Meets minimums'] };
+
+/** Inner HTML of the verdict pill; the level goes in its class (verdict-pill--<level>). */
+export function renderVerdictPill(r) {
+  const { level, failing } = r.verdict;
+  const [icon, text] = VERDICT_SHORT[level] ?? ['!', `${failing.length} to fix`];
+  return `<span class="verdict-pill__icon" aria-hidden="true">${icon}</span><span>${text}</span><svg class="verdict-pill__chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>`;
 }
 
 /** Strings for the 3D labels. */
@@ -359,6 +353,10 @@ export function faqEntries(list, facts, allowance) {
     {
       q: 'How big should a hamster cage be?',
       a: `${facts.floor} Only unbroken floor counts: platforms, shelves and extra levels don't add to it. Bigger is better — German veterinary guidance (TVT) says Syrian hamsters do best with about 1 m², and a study found signs of better welfare in 10,000 cm² cages than in smaller ones (Fischer, Gebhardt-Henrich & Steiger, 2007).`,
+    },
+    {
+      q: 'Is a 40-gallon tank big enough for a hamster?',
+      a: `Not by current welfare guidance. A 40-gallon breeder tank is about 91 × 46 cm (36 × 18 in): 4,180 cm² (648 sq in), below the ${fmtNumber(syrian.floor.minLengthCm, 0)} × ${fmtNumber(syrian.floor.minWidthCm, 0)} cm (${fmtAreaPair(syrian.floor.minAreaCm2)}) minimum, and about 41 cm (16 in) tall, under the ${fmtLenBoth(syrian.height.minCm)} minimum height. A 75-gallon tank (about 122 × 46 cm, 48 × 18 in) has enough floor area but is narrower than 50 cm.`,
     },
     {
       q: 'How deep should hamster bedding be?',

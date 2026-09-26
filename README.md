@@ -39,17 +39,19 @@ counts — platforms, shelves and extra levels don't add to it.
 
 ## Features
 
-- **3D enclosure to scale**: glass tank, bin cage, wooden enclosure or wire cage, with bedding, wheel, hide, sand
-  bath, water bowl and a hamster of the right size for the species.
-- **See the burrows**: switch to the front view to see the cross-section through the glass. Tunnels appear once the
-  bedding reaches the species minimum; a full burrow with nest chamber, food store and bolt hole appears at burrowing
-  depth.
+- **Opens straight into 3D**: the whole screen is the enclosure; settings live in a small dock (Hamster, Cage,
+  Bedding, Wheel, Buy) and a status pill opens the checklist.
+- **Drag to arrange**: move the wheel, hide, sand bath, water bowl and hamster with the mouse or a finger. Select an
+  item to rotate it (or press R). The checks follow the layout — a wheel dragged onto the deep burrowing area may no
+  longer fit under the lid. Layouts are saved in the share link.
+- **3D enclosure to scale**: glass tank, bin cage, wooden enclosure or wire cage, with a hamster of the right size for
+  the species.
+- **See the burrows**: the front view shows the cross-section through the glass. Tunnels appear once the bedding
+  reaches the species minimum; a full burrow with nest chamber, food store and bolt hole appears at burrowing depth.
 - **Checklist** against the species minimums: floor space, height, bedding depth, burrowing area, wheel size, wheel
   fit and wire-cage base height.
 - **Bedding calculator**: liters of bedding to buy (with an adjustable compaction allowance) and the number of packs.
-- Deep burrowing area with adjustable depth and share of the floor.
 - cm or inches, common enclosure sizes (including 40-, 55- and 75-gallon tanks), shareable links and image export.
-- Works without the 3D view: the checklist and calculator don't need WebGL.
 
 ## How the planner calculates
 
@@ -60,7 +62,7 @@ counts — platforms, shelves and extra levels don't add to it.
 | Bedding depth | standard depth ≥ species minimum everywhere. |
 | Burrowing area | a deeper area reaching the species burrowing depth counts as a full burrowing area. |
 | Wheel size | diameter ≥ species minimum, with a solid running surface. |
-| Wheel fit | bedding depth + 2 cm stand + wheel diameter ≤ enclosure height. |
+| Wheel fit | bedding under the wheel (wherever it's placed) + 2 cm stand + wheel diameter ≤ enclosure height. |
 | Wire cages | bedding can't be deeper than the plastic base. |
 | Bedding volume | liters = length × width × average depth (cm) ÷ 1,000, plus the compaction allowance (50% by default, since keepers report needing 1.5–2× the calculated volume); packs are rounded up. |
 
@@ -128,7 +130,8 @@ npm run readme   # regenerate the README blocks after editing data/species.json
 | Path | Contents |
 | --- | --- |
 | `index.html` | Page content. `<!--@…-->` placeholders are filled at build time from the data, so the numbers, tables, FAQ and structured data are in the static HTML. |
-| `src/calc.js` | Pure calculation logic, shared by the app, the build and the tests. |
+| `src/calc.js`, `src/profile.js` | Pure calculation logic and bedding geometry, shared by the app, the build and the tests. |
+| `src/layout.js` | Furniture layout: automatic placement, dragging, collisions and share-link encoding. |
 | `src/render.js` | Text and HTML builders for results and content. |
 | `src/scene/` | Three.js scene: enclosures, bedding terrain, burrow cross-section, furniture and the hamster. |
 | `data/` | Open data (CC BY 4.0). |

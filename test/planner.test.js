@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import {
   averageDepthCm, beddingVolume, depthAt, evaluate, fillLimitCm, maxDepthCm, wheelTopCm,
 } from '../src/calc.js';
+import { ITEM_KEYS, computeLayout, decodeLayout, encodeLayout, overlaps, toUserLayout, tryMove, tryRotate } from '../src/layout.js';
 import { renderStaticParts } from '../src/prerender.js';
 import { ENCLOSURE_TYPES, LIMITS, defaultState, normalize, stateFromQuery, stateToQuery } from '../src/state.js';
 
@@ -81,7 +82,8 @@ test('a wheel taller than the enclosure fails the fit check', () => {
   s.enclosure.heightCm = 45;
   normalize(s);
   const r = evaluate(s, species.syrian);
-  assert.equal(wheelTopCm(s.bedding, s.wheel), s.bedding.depthCm + 2 + s.wheel.diameterCm);
+  assert.equal(wheelTopCm(s.bedding.depthCm, s.wheel), s.bedding.depthCm + 2 + s.wheel.diameterCm);
+  assert.ok(Math.abs(r.wheel.baseCm - s.bedding.depthCm) < 1e-9, 'wheel stands on the standard-depth bedding');
   assert.equal(r.wheel.fits, false);
   assert.ok(r.verdict.failing.includes('wheel-fit'));
 });
@@ -104,6 +106,67 @@ test('an enclosure under the minimum height fails', () => {
   const r = evaluate(s, species.campbell);
   assert.equal(r.height.status, 'fail');
   assert.ok(r.verdict.failing.includes('height'));
+});
+
+test('automatic layout keeps every item inside the enclosure without overlaps', () => {
+  const enclosures = [
+    { type: 'tank', lengthCm: 100, widthCm: 50, heightCm: 60, baseHeightCm: 15 },
+    { type: 'wire', lengthCm: 60, widthCm: 40, heightCm: 38, baseHeightCm: 10 },
+    { type: 'wood', lengthCm: 240, widthCm: 120, heightCm: 80, baseHeightCm: 15 },
+    { type: 'bin', lengthCm: 30, widthCm: 20, heightCm: 30, baseHeightCm: 15 },
+  ];
+  for (const sp of Object.values(species)) {
+    for (const enclosure of enclosures) {
+      const s = defaultState();
+      s.enclosure = { ...enclosure };
+      s.wheel.diameterCm = sp.wheel.recommendedDiameterCm;
+      normalize(s);
+      const items = Object.values(computeLayout(s, sp));
+      for (const item of items) {
+        assert.ok(Math.abs(item.x) + item.fx / 2 <= enclosure.lengthCm / 2 + 1e-6 || item.x === 0, `${sp.id} ${item.key} x`);
+        assert.ok(Math.abs(item.z) + item.fz / 2 <= enclosure.widthCm / 2 + 1e-6 || item.z === 0, `${sp.id} ${item.key} z`);
+      }
+      for (let i = 0; i < items.length; i++) {
+        for (let j = i + 1; j < items.length; j++) {
+          assert.ok(!overlaps(items[i], items[j]), `${sp.id} ${items[i].key}/${items[j].key} in ${enclosure.lengthCm} cm`);
+        }
+      }
+    }
+  }
+  const roomy = computeLayout(defaultState(), species.syrian);
+  assert.deepEqual(Object.keys(roomy).sort(), [...ITEM_KEYS].sort(), 'everything fits in the default enclosure');
+});
+
+test('a wheel dragged onto the deep burrowing area no longer fits under the lid', () => {
+  const s = defaultState();
+  const layout = computeLayout(s, species.syrian);
+  const moved = tryMove(layout, 'wheel', s.enclosure.lengthCm / 2, layout.wheel.z, s);
+  assert.ok(moved, 'the wheel can be moved to the right-hand end');
+  s.layout = toUserLayout({ ...layout, wheel: { ...layout.wheel, ...moved } }, s);
+  const r = evaluate(s, species.syrian);
+  assert.ok(r.wheel.baseCm > s.bedding.depthCm + 10, 'wheel now stands on deep bedding');
+  assert.equal(r.wheel.fits, false);
+});
+
+test('items cannot be moved or rotated into each other', () => {
+  const s = defaultState();
+  const layout = computeLayout(s, species.syrian);
+  const blocked = tryMove(layout, 'bowl', layout.hide.x, layout.hide.z, s);
+  if (blocked) assert.ok(!overlaps({ ...layout.bowl, ...blocked }, layout.hide));
+  const turned = tryRotate(layout, 'wheel', s);
+  assert.ok(turned);
+  assert.equal(turned.r, 1);
+  assert.equal(turned.fx, layout.wheel.fz);
+});
+
+test('layouts survive the share link', () => {
+  const user = { wheel: { u: 0.125, v: 0.3, r: 1 }, bowl: { u: 0.5, v: 0.75, r: 0 } };
+  assert.deepEqual(decodeLayout(encodeLayout(user)), user);
+  assert.equal(decodeLayout('garbage'), null);
+  const s = defaultState();
+  s.layout = user;
+  normalize(s);
+  assert.deepEqual(stateFromQuery(`?${stateToQuery(s)}`, speciesIds).layout, user);
 });
 
 test('share links round-trip the whole setup', () => {

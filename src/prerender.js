@@ -3,8 +3,8 @@
 // (readable by search engines and AI crawlers that don't run JavaScript).
 import { evaluate } from './calc.js';
 import {
-  describeScene, esc, faqEntries, keyFacts, renderChecks, renderFaq, renderKeyFacts, renderMetrics,
-  renderPresetOptions, renderSources, renderSpeciesFacts, renderSpeciesOptions, renderSpeciesTable, renderVerdict,
+  describeScene, esc, faqEntries, keyFacts, renderChecks, renderFaq, renderKeyFacts, renderMetricChips,
+  renderPresetOptions, renderSources, renderSpeciesFacts, renderSpeciesOptions, renderSpeciesTable, renderVerdictPill,
 } from './render.js';
 import { defaultState } from './state.js';
 
@@ -36,7 +36,7 @@ export function buildJsonLd({ list, faq, dataVersion }) {
     name: 'Hamster Habitat Planner',
     url: SITE.url,
     description:
-      'Free 3D planner that checks a hamster enclosure against welfare guidelines: minimum floor space, bedding depth, burrowing depth, how many liters of bedding to buy and wheel size, for Syrian, dwarf and Chinese hamsters.',
+      'Free 3D planner for hamster enclosures: arrange the wheel, hide, sand bath and bowl by dragging them, and check minimum floor space, height, bedding depth, burrowing depth, liters of bedding to buy and wheel size for Syrian, dwarf and Chinese hamsters.',
     applicationCategory: 'LifestyleApplication',
     operatingSystem: 'Any',
     browserRequirements: 'Requires JavaScript. The 3D preview needs WebGL.',
@@ -96,8 +96,9 @@ export function renderStaticParts(html, { species, enclosures }) {
     'species-options': renderSpeciesOptions(list, state.species),
     'species-facts': renderSpeciesFacts(sp, state.units),
     'preset-options': renderPresetOptions(enclosures.presets),
-    verdict: renderVerdict(results, sp, state.units),
-    metrics: renderMetrics(results, state.units),
+    'verdict-pill': renderVerdictPill(results),
+    'verdict-level': results.verdict.level,
+    'metric-chips': renderMetricChips(results, state.units),
     checks: renderChecks(results, sp, state.units, state),
     'scene-description': esc(describeScene(state, results, sp, state.units)),
     'species-table': renderSpeciesTable(list, species.sources),

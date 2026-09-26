@@ -1,22 +1,27 @@
 // Three.js scene for the planner: builds the enclosure, bedding, furniture and hamster from the
-// planner state and keeps the camera framed. Loaded lazily so the page content renders first.
+// planner state, keeps the camera framed and lets the user drag furniture around.
+// Loaded lazily so the page renders first.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DObject, CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { depthAt } from '../calc.js';
+import { bodyCm, bowlSizeCm, surfaceUnder, toUserLayout, tryMove, tryRotate } from '../layout.js';
 import { beddingRegions, beddingTextureHeightCm, beddingZones, buildBedding } from './bedding.js';
 import { buildEnclosure } from './enclosure.js';
-import { buildHamster, modelBodyCm } from './hamster.js';
+import { buildHamster } from './hamster.js';
 import { buildBowl, buildHide, buildSandBath, buildWheel } from './props.js';
 import { createBeddingTextures, createBurrowTexture, createSandTexture, createWoodTexture } from './textures.js';
 
 const deg = THREE.MathUtils.degToRad;
 const VIEWS = {
-  iso: { phi: deg(60), theta: deg(32), zoom: 1, targetY: 0.3 },
-  front: { phi: deg(87), theta: 0, zoom: 0.8, targetY: 0.42 },
-  top: { phi: deg(3), theta: 0, zoom: 0.9, targetY: 0.2 },
+  iso: { phi: deg(58), theta: deg(32), portraitTheta: deg(62), zoom: 1, targetY: 0.3 },
+  front: { phi: deg(87), theta: 0, zoom: 0.82, targetY: 0.42 },
+  top: { phi: deg(3), theta: 0, zoom: 0.92, targetY: 0.2 },
 };
+const SINK_CM = 0.35; // items settle slightly into the bedding
+const ROTATE_ICON =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 function createMaterials(anisotropy) {
   const wood = createWoodTexture(anisotropy);
@@ -66,13 +71,37 @@ function createMaterials(anisotropy) {
     whisker: new THREE.LineBasicMaterial({ color: 0xcfc6ba, transparent: true, opacity: 0.8 }),
     ghost: new THREE.LineDashedMaterial({ color: 0xd0543f, dashSize: 3, gapSize: 2 }),
     shadow: new THREE.ShadowMaterial({ opacity: 0.2 }),
+    outline: new THREE.LineBasicMaterial({ color: 0xf1941c, depthTest: false, transparent: true }),
+    outlineHover: new THREE.LineBasicMaterial({ color: 0xf1941c, depthTest: false, transparent: true, opacity: 0.45 }),
   };
 }
 
 /** Tunnel diameter drawn for a species: roughly the width of the hamster. */
-const tunnelSize = (bodyCm) => Math.max(2.8, bodyCm * 0.38);
+const tunnelSize = (body) => Math.max(2.8, body * 0.38);
 
-
+/** Rounded-rectangle outline lying flat, used to show hovered / selected items. */
+function footprintOutline(fx, fz, material) {
+  const r = Math.min(3, fx / 4, fz / 4);
+  const shape = new THREE.Shape();
+  const x = -fx / 2 - 0.8;
+  const z = -fz / 2 - 0.8;
+  const w = fx + 1.6;
+  const d = fz + 1.6;
+  shape.moveTo(x + r, z);
+  shape.lineTo(x + w - r, z);
+  shape.quadraticCurveTo(x + w, z, x + w, z + r);
+  shape.lineTo(x + w, z + d - r);
+  shape.quadraticCurveTo(x + w, z + d, x + w - r, z + d);
+  shape.lineTo(x + r, z + d);
+  shape.quadraticCurveTo(x, z + d, x, z + d - r);
+  shape.lineTo(x, z + r);
+  shape.quadraticCurveTo(x, z, x + r, z);
+  const points = shape.getPoints(6).map((p) => new THREE.Vector3(p.x, 0.6, p.y));
+  const line = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points), material);
+  line.renderOrder = 10;
+  line.name = 'outline';
+  return line;
+}
 
 export function createScene(container, { reducedMotion = false } = {}) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -83,6 +112,7 @@ export function createScene(container, { reducedMotion = false } = {}) {
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.domElement.className = 'viewport__canvas';
   container.appendChild(renderer.domElement);
+  const canvas = renderer.domElement;
 
   const labelRenderer = new CSS2DRenderer();
   labelRenderer.domElement.className = 'viewport__labels';
@@ -99,13 +129,11 @@ export function createScene(container, { reducedMotion = false } = {}) {
   pmrem.dispose();
 
   const camera = new THREE.PerspectiveCamera(30, 1, 1, 5000);
-  const controls = new OrbitControls(camera, renderer.domElement);
+  const controls = new OrbitControls(camera, canvas);
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.minPolarAngle = 0.02;
   controls.maxPolarAngle = deg(88);
-  controls.autoRotate = !reducedMotion;
-  controls.autoRotateSpeed = 0.45;
 
   const hemi = new THREE.HemisphereLight(0xfff8ee, 0xcdbd9f, 0.95);
   scene.add(hemi);
@@ -127,22 +155,40 @@ export function createScene(container, { reducedMotion = false } = {}) {
   const world = new THREE.Group();
   scene.add(world);
 
+  const api = {};
   let hamster = null;
   let tween = null;
+  let tweenView = null; // view the running camera animation is heading to
   let dims = null;
   let updates = 0;
+  let insets = { top: 0, bottom: 0, left: 0, right: 0 };
+  let lastState = null;
+  let layout = {}; // current item positions (mutable while dragging)
+  const items = new Map(); // key → group
+  let selected = null;
+  let hovered = null;
+  let drag = null;
+  let pendingEmit = false;
   const tmpV = new THREE.Vector3();
 
   controls.addEventListener('start', () => {
-    controls.autoRotate = false;
     tween = null;
   });
+
+  const stopTween = () => {
+    tween = null;
+    tweenView = null;
+  };
 
   function clearWorld() {
     for (const child of [...world.children]) {
       world.remove(child); // fires 'removed', which also detaches CSS2D label elements
-      child.traverse((o) => o.geometry?.dispose());
+      child.traverse((o) => {
+        o.geometry?.dispose();
+        if (o.isCSS2DObject) o.element.remove();
+      });
     }
+    items.clear();
     hamster = null;
   }
 
@@ -164,31 +210,67 @@ export function createScene(container, { reducedMotion = false } = {}) {
     if (first) materials.beddingFront.needsUpdate = true;
   }
 
-  function addLabel(text, className, x, y, z) {
+  function makeLabel(text, className, x, y, z, parent = world) {
     const el = document.createElement('div');
     el.className = `lbl ${className}`;
     el.textContent = text;
     const obj = new CSS2DObject(el);
     obj.position.set(x, y, z);
-    world.add(obj);
+    parent.add(obj);
     return obj;
   }
 
-  function fitDistance(L, W, H) {
-    const radius = 0.5 * Math.hypot(L, W, H);
-    const vFov = deg(camera.fov);
-    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
-    return (radius / Math.sin(Math.min(vFov, hFov) / 2)) * 0.98;
+  // ---------------------------------------------------------------------------
+  // Camera
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Camera distance at which every corner of the enclosure fits on screen for the given viewing
+   * angles, leaving room for the overlaid UI (insets).
+   */
+  function fitDistance(L, W, H, phi, theta, targetY) {
+    const w = container.clientWidth || 1;
+    const h = container.clientHeight || 1;
+    const tanV = Math.tan(deg(camera.fov) / 2) * Math.max(0.25, 1 - (insets.top + insets.bottom) / h);
+    const tanH = Math.tan(deg(camera.fov) / 2) * camera.aspect * Math.max(0.25, 1 - (insets.left + insets.right) / w);
+    const back = new THREE.Vector3().setFromSpherical(new THREE.Spherical(1, phi, theta)); // target → camera
+    const right = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), back).normalize();
+    if (right.lengthSq() < 1e-6) right.set(1, 0, 0);
+    const up = new THREE.Vector3().crossVectors(back, right).normalize();
+    let dist = 0;
+    for (const x of [-L / 2, L / 2]) {
+      for (const y of [0, H]) {
+        for (const z of [-W / 2, W / 2]) {
+          const p = tmpV.set(x, y - targetY, z);
+          const toward = p.dot(back); // how much closer to the camera than the target
+          const need = Math.max(Math.abs(p.dot(right)) / tanH, Math.abs(p.dot(up)) / tanV) + toward;
+          dist = Math.max(dist, need);
+        }
+      }
+    }
+    return dist * 1.06;
+  }
+
+  function applyViewOffset() {
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    if (!w || !h) return;
+    // Centre the cage in the space left between the overlays.
+    const dx = (insets.right - insets.left) / 2;
+    const dy = (insets.bottom - insets.top) / 2;
+    if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) camera.setViewOffset(w, h, dx, dy, w, h);
+    else camera.clearViewOffset();
   }
 
   function frame(keepAngles = true) {
     if (!dims) return;
     const { L, W, H } = dims;
-    const dist = fitDistance(L, W, H);
     const offset = camera.position.clone().sub(controls.target);
-    const sph = keepAngles && offset.lengthSq() > 0
-      ? new THREE.Spherical().setFromVector3(offset)
-      : new THREE.Spherical(dist, VIEWS.iso.phi, VIEWS.iso.theta);
+    const sph =
+      keepAngles && offset.lengthSq() > 0
+        ? new THREE.Spherical().setFromVector3(offset)
+        : new THREE.Spherical(1, VIEWS.iso.phi, isoTheta());
+    const dist = fitDistance(L, W, H, sph.phi, sph.theta, H * 0.3);
     sph.radius = dist;
     controls.target.set(0, H * 0.3, 0);
     camera.position.copy(controls.target).add(tmpV.setFromSpherical(sph));
@@ -197,20 +279,22 @@ export function createScene(container, { reducedMotion = false } = {}) {
     camera.lookAt(controls.target);
   }
 
-  function setView(name) {
-    const view = VIEWS[name];
+  const isoTheta = () => (camera.aspect < 0.8 ? VIEWS.iso.portraitTheta : VIEWS.iso.theta);
+
+  function setView(name, { duration = 750 } = {}) {
+    const view = name === 'iso' ? { ...VIEWS.iso, theta: isoTheta() } : VIEWS[name];
     if (!view || !dims) return;
-    controls.autoRotate = false;
     const from = new THREE.Spherical().setFromVector3(camera.position.clone().sub(controls.target));
-    const toRadius = fitDistance(dims.L, dims.W, dims.H) * view.zoom;
-    const fromY = controls.target.y;
     const toY = dims.H * view.targetY;
+    const toRadius = fitDistance(dims.L, dims.W, dims.H, view.phi, view.theta, toY) * view.zoom;
+    const fromY = controls.target.y;
     let dTheta = view.theta - from.theta;
     dTheta = ((((dTheta + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) - Math.PI;
     const start = performance.now();
-    const duration = reducedMotion ? 1 : 750;
+    const ms = reducedMotion ? 1 : duration;
+    tweenView = name;
     tween = (now) => {
-      const k = Math.min(1, (now - start) / duration);
+      const k = Math.min(1, (now - start) / ms);
       const e = k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2;
       const s = new THREE.Spherical(
         from.radius + (toRadius - from.radius) * e,
@@ -220,14 +304,190 @@ export function createScene(container, { reducedMotion = false } = {}) {
       controls.target.y = fromY + (toY - fromY) * e;
       camera.position.copy(controls.target).add(tmpV.setFromSpherical(s));
       camera.lookAt(controls.target);
-      if (k >= 1) tween = null;
+      if (k >= 1) stopTween();
     };
   }
 
   /**
+   * Space covered by overlaid UI (app bar, dock, side panel), so the cage is framed between them.
+   * Only vertical changes refit the distance; a side panel just slides the view over.
+   */
+  function setInsets(next) {
+    const refit = next.top !== insets.top || next.bottom !== insets.bottom;
+    insets = { top: 0, bottom: 0, left: 0, right: 0, ...next };
+    applyViewOffset();
+    if (!refit) return;
+    // Mid-animation, head for the refitted framing instead of the old one.
+    if (tween && tweenView) setView(tweenView, { duration: 450 });
+    else frame(true);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Selection, hover and dragging
+  // ---------------------------------------------------------------------------
+
+  function decorate(group) {
+    const key = group.userData.key;
+    group.getObjectByName('outline')?.removeFromParent();
+    group.getObjectByName('rotate')?.removeFromParent();
+    const item = layout[key];
+    if (!item || (key !== selected && key !== hovered)) return;
+    const unrotated = item.r % 2 ? { x: item.fz, z: item.fx } : { x: item.fx, z: item.fz };
+    group.add(footprintOutline(unrotated.x, unrotated.z, key === selected ? materials.outline : materials.outlineHover));
+    if (key === selected && !drag) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'item-rotate';
+      button.title = 'Rotate (R)';
+      button.setAttribute('aria-label', 'Rotate');
+      button.innerHTML = ROTATE_ICON;
+      button.addEventListener('pointerdown', (event) => event.stopPropagation());
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        rotateSelected();
+      });
+      const obj = new CSS2DObject(button);
+      obj.name = 'rotate';
+      obj.position.set(0, group.userData.height + 5, 0);
+      group.add(obj);
+    }
+  }
+
+  function refreshDecorations() {
+    for (const group of items.values()) decorate(group);
+  }
+
+  function select(key) {
+    if (selected === key) return;
+    selected = key;
+    refreshDecorations();
+  }
+
+  function setHovered(key) {
+    if (hovered === key) return;
+    hovered = key;
+    canvas.style.cursor = key ? 'move' : '';
+    refreshDecorations();
+  }
+
+  function emitLayout(final) {
+    if (!lastState) return;
+    api.onLayoutChange?.(toUserLayout(layout, lastState), { final });
+  }
+
+  function rotateSelected() {
+    if (!selected || !layout[selected] || !lastState) return;
+    const next = tryRotate(layout, selected, lastState);
+    if (!next) return;
+    layout[selected] = { ...layout[selected], ...next };
+    emitLayout(true);
+  }
+
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+  const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+
+  function aim(event) {
+    const rect = canvas.getBoundingClientRect();
+    pointer.set(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1);
+    raycaster.setFromCamera(pointer, camera);
+  }
+
+  function pickItem() {
+    const hits = raycaster.intersectObjects([...items.values()], true);
+    for (const hit of hits) {
+      let o = hit.object;
+      while (o && !o.userData.key) o = o.parent;
+      if (o) return o.userData.key;
+    }
+    return null;
+  }
+
+  // Capture phase: runs before OrbitControls, so grabbing an item doesn't also orbit the camera.
+  canvas.addEventListener(
+    'pointerdown',
+    (event) => {
+      if (event.button !== 0) return;
+      aim(event);
+      const key = pickItem();
+      if (!key) {
+        select(null);
+        return;
+      }
+      const group = items.get(key);
+      controls.enabled = false;
+      stopTween();
+      dragPlane.constant = -group.position.y;
+      const hit = raycaster.ray.intersectPlane(dragPlane, new THREE.Vector3());
+      drag = {
+        key,
+        offset: hit ? hit.sub(group.position) : new THREE.Vector3(),
+        startX: event.clientX,
+        startY: event.clientY,
+        moved: false,
+      };
+      canvas.setPointerCapture(event.pointerId);
+      selected = key;
+      hovered = key;
+      refreshDecorations();
+      canvas.style.cursor = 'grabbing';
+    },
+    { capture: true },
+  );
+
+  canvas.addEventListener('pointermove', (event) => {
+    aim(event);
+    if (!drag) {
+      if (event.pointerType === 'mouse') setHovered(pickItem());
+      return;
+    }
+    if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 3) return;
+    drag.moved = true;
+    const hit = raycaster.ray.intersectPlane(dragPlane, tmpV);
+    if (!hit || !lastState) return;
+    const next = tryMove(layout, drag.key, hit.x - drag.offset.x, hit.z - drag.offset.z, lastState);
+    if (!next) return;
+    const item = { ...layout[drag.key], ...next };
+    item.y = surfaceUnder(item.x, item.fx, lastState);
+    layout[drag.key] = item;
+    const group = items.get(drag.key);
+    group.position.set(item.x, item.y - SINK_CM, item.z);
+    dragPlane.constant = -group.position.y;
+    pendingEmit = true;
+  });
+
+  const endDrag = (event) => {
+    if (!drag) return;
+    if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+    const { moved } = drag;
+    drag = null;
+    controls.enabled = true;
+    canvas.style.cursor = hovered ? 'move' : '';
+    pendingEmit = false;
+    if (moved) emitLayout(true);
+    else refreshDecorations();
+  };
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+  canvas.addEventListener('pointerleave', () => {
+    if (!drag) setHovered(null);
+  });
+
+  const onKey = (event) => {
+    if (!selected || event.target.closest?.('input, select, textarea')) return;
+    if (event.key === 'r' || event.key === 'R') rotateSelected();
+    if (event.key === 'Escape') select(null);
+  };
+  window.addEventListener('keydown', onKey);
+
+  // ---------------------------------------------------------------------------
+  // Build
+  // ---------------------------------------------------------------------------
+
+  /**
    * Rebuild the scene.
    * @param {object} state    planner state
-   * @param {object} results  evaluate() output
+   * @param {object} results  evaluate() output (includes the layout)
    * @param {object} species  species record from data/species.json
    * @param {object} text     preformatted label strings (units handled by the caller)
    */
@@ -236,8 +496,11 @@ export function createScene(container, { reducedMotion = false } = {}) {
     const L = enclosure.lengthCm;
     const W = enclosure.widthCm;
     const H = enclosure.heightCm;
-    if (updates++ > 0) controls.autoRotate = false;
+    updates++;
+    if (drag) return; // never rebuild under the user's pointer
     clearWorld();
+    lastState = structuredClone(state);
+    layout = structuredClone(results.layout);
 
     const { group: enclosureGroup, floorOffset } = buildEnclosure(enclosure, materials, {
       barSpacingCm: species.bars?.maxGapCm ?? 1,
@@ -246,14 +509,14 @@ export function createScene(container, { reducedMotion = false } = {}) {
 
     // Bedding with the burrow cross-section on the front face.
     applyLook(bedding.look);
-    const bodyCm = modelBodyCm(species.id);
+    const body = bodyCm(species.id);
     const zones = beddingZones(L, bedding);
     const burrow = createBurrowTexture({
       lengthCm: L,
       heightCm: beddingTextureHeightCm(bedding),
       depthAtX: (x) => depthAt(x / L, bedding, L),
       regions: beddingRegions(L, bedding),
-      tunnelCm: tunnelSize(bodyCm),
+      tunnelCm: tunnelSize(body),
       minDepthCm: species.bedding.minDepthCm,
       burrowDepthCm: species.bedding.burrowDepthCm,
       look: bedding.look,
@@ -262,51 +525,37 @@ export function createScene(container, { reducedMotion = false } = {}) {
     setBurrowTexture(burrow.texture);
     world.add(buildBedding({ lengthCm: L, widthCm: W, bedding, materials }));
 
-    // Furniture, placed on the bedding surface without overlapping.
-    const surface = (x) => depthAt((x + L / 2) / L, bedding, L);
-    const margin = 2.5;
-    const taken = [];
-    const collides = (x, z, fx, fz) =>
-      taken.some((r) => Math.abs(x - r.x) < (fx + r.fx) / 2 + 1 && Math.abs(z - r.z) < (fz + r.fz) / 2 + 1);
-    const findSpot = (fx, fz, rows) => {
-      for (const row of rows) {
-        const z = row === 'back' ? -W / 2 + margin + fz / 2 : row === 'front' ? W / 2 - margin - fz / 2 : 0;
-        if (Math.abs(z) + fz / 2 > W / 2) continue;
-        for (let x = -L / 2 + margin + fx / 2; x <= L / 2 - margin - fx / 2; x += 1.5) {
-          if (!collides(x, z, fx, fz)) return { x, z };
-        }
+    // Furniture and hamster at their layout positions (automatic or dragged by the user).
+    const sand = species.sandBath;
+    const built = {
+      wheel: buildWheel(wheel.diameterCm, materials, { fits: results.wheel.fits }),
+      sand: buildSandBath(sand.minLengthCm, sand.minWidthCm, materials),
+      hide: buildHide(body, materials),
+      bowl: buildBowl(bowlSizeCm(body), materials),
+    };
+    hamster = buildHamster(species.id, body, materials);
+    built.hamster = { group: hamster, height: body * 0.55 };
+    for (const [key, item] of Object.entries(built)) {
+      const pos = layout[key];
+      if (!pos) {
+        if (key === 'hamster') hamster = null;
+        continue;
       }
-      return null;
-    };
-    const place = (item, rows, { rotationY = 0 } = {}) => {
-      const { x: fx, z: fz } = item.footprint;
-      const spot = findSpot(fx, fz, rows);
-      if (!spot) return null;
-      let y = 0;
-      for (let i = 0; i <= 4; i++) y += surface(spot.x - fx / 2 + (fx * i) / 4);
-      item.group.position.set(spot.x, y / 5 - 0.35, spot.z);
-      item.group.rotation.y = rotationY;
-      world.add(item.group);
-      taken.push({ ...spot, fx, fz });
-      return spot;
-    };
-
-    const wheelItem = buildWheel(wheel.diameterCm, materials, { fits: results.wheel.fits });
-    const wheelSpot = place(wheelItem, ['back', 'front']);
-    const sandSize = species.sandBath ?? { minLengthCm: bodyCm * 1.6, minWidthCm: bodyCm * 1.15 };
-    place(buildSandBath(sandSize.minLengthCm, sandSize.minWidthCm, materials), ['front', 'back', 'mid']);
-    place(buildHide(bodyCm, materials), ['back', 'front', 'mid']);
-    place(buildBowl(Math.min(10, Math.max(6, bodyCm * 0.55)), materials), ['front', 'mid', 'back']);
-
-    hamster = buildHamster(species.id, bodyCm, materials);
-    const hamsterSpot = findSpot(bodyCm * 0.8, bodyCm * 1.15, ['front', 'mid', 'back']);
-    if (hamsterSpot) {
-      hamster.position.set(hamsterSpot.x, surface(hamsterSpot.x) - 0.2, hamsterSpot.z);
-      hamster.rotation.y = 0.5;
-      world.add(hamster);
-    } else {
-      hamster = null;
+      const group = item.group;
+      group.userData.key = key;
+      group.userData.height = item.height;
+      group.position.set(pos.x, pos.y - SINK_CM, pos.z);
+      // The hamster turns a little towards the default camera so its face is visible.
+      group.rotation.y = (pos.r * Math.PI) / 2 + (key === 'hamster' ? 0.45 : 0);
+      world.add(group);
+      items.set(key, group);
     }
+    if (!results.wheel.fits && items.has('wheel')) {
+      makeLabel(text.wheel, 'lbl--warn', 0, built.wheel.height + 3, 0, items.get('wheel'));
+    }
+    if (selected && !items.has(selected)) selected = null;
+    if (hovered && !items.has(hovered)) hovered = null;
+    refreshDecorations();
 
     // Minimum footprint outline on the ground when the floor is too small or too narrow.
     if (results.floor.status !== 'pass') {
@@ -321,23 +570,19 @@ export function createScene(container, { reducedMotion = false } = {}) {
       );
       outline.computeLineDistances();
       world.add(outline);
-      addLabel(text.minFootprint, 'lbl--warn', 0, y, Math.max(d, W / 2) + 14);
+      makeLabel(text.minFootprint, 'lbl--warn', 0, y, Math.max(d, W / 2) + 14);
     }
 
-    // Dimension and feature labels.
-    addLabel(text.length, 'lbl--dim', 0, -floorOffset, W / 2 + 3);
-    addLabel(text.width, 'lbl--dim', L / 2 + 3, -floorOffset, 0);
-    addLabel(text.height, 'lbl--dim', L / 2 + 2, H / 2, W / 2 + 2);
+    // Dimension and burrow labels.
+    makeLabel(text.length, 'lbl--dim', 0, -floorOffset, W / 2 + 3);
+    makeLabel(text.width, 'lbl--dim', L / 2 + 3, -floorOffset, 0);
+    makeLabel(text.height, 'lbl--dim', L / 2 + 2, H / 2, W / 2 + 2);
     for (const zone of zones) {
       const x = -L / 2 + (zone.x0 + zone.x1) / 2;
-      addLabel(zone.kind === 'deep' ? text.deep : text.depth, 'lbl--depth', x, zone.depthCm + 3, W / 2 + 1);
+      makeLabel(zone.kind === 'deep' ? text.deep : text.depth, 'lbl--depth', x, zone.depthCm + 3, W / 2 + 1);
     }
     for (const c of burrow.chambers) {
-      const name = c.kind === 'store' ? text.store : text.nest;
-      addLabel(name, 'lbl--burrow', -L / 2 + c.x, c.y, W / 2 + 1);
-    }
-    if (wheelSpot) {
-      addLabel(text.wheel, results.wheel.fits ? 'lbl--muted' : 'lbl--warn', wheelSpot.x, wheelItem.group.position.y + wheelItem.height + 3, wheelSpot.z);
+      makeLabel(c.kind === 'store' ? text.store : text.nest, 'lbl--burrow', -L / 2 + c.x, c.y, W / 2 + 1);
     }
 
     // Ground, lights and shadow camera follow the enclosure size.
@@ -353,11 +598,20 @@ export function createScene(container, { reducedMotion = false } = {}) {
     sc.far = span * 6;
     sc.updateProjectionMatrix();
 
-    const nextDims = { L, W, H };
     const first = !dims;
     const changed = !dims || dims.L !== L || dims.W !== W || dims.H !== H;
-    dims = nextDims;
+    dims = { L, W, H };
     if (changed) frame(!first);
+    if (first && !reducedMotion) {
+      // A short fly-in shows it's 3D without a camera that keeps moving under the pointer.
+      const sph = new THREE.Spherical().setFromVector3(camera.position.clone().sub(controls.target));
+      sph.theta -= deg(28);
+      sph.phi = Math.max(deg(35), sph.phi - deg(10));
+      sph.radius *= 1.35;
+      camera.position.copy(controls.target).add(tmpV.setFromSpherical(sph));
+      camera.lookAt(controls.target);
+      setView('iso', { duration: 1400 });
+    }
   }
 
   function resize() {
@@ -368,6 +622,7 @@ export function createScene(container, { reducedMotion = false } = {}) {
     labelRenderer.setSize(w, h);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
+    applyViewOffset();
     frame(true);
   }
   const resizeObserver = new ResizeObserver(resize);
@@ -386,6 +641,10 @@ export function createScene(container, { reducedMotion = false } = {}) {
     if (tween) tween(now);
     controls.update();
     if (hamster && !reducedMotion) hamster.userData.tick(now / 1000);
+    if (pendingEmit) {
+      pendingEmit = false;
+      emitLayout(false);
+    }
     renderer.render(scene, camera);
     labelRenderer.render(scene, camera);
   };
@@ -396,8 +655,14 @@ export function createScene(container, { reducedMotion = false } = {}) {
     const prevSize = renderer.getSize(new THREE.Vector2());
     const prevRatio = renderer.getPixelRatio();
     const prevAspect = camera.aspect;
+    const prevInsets = insets;
     const resized = Boolean(width && height);
+    for (const group of items.values()) {
+      group.getObjectByName('outline')?.removeFromParent();
+    }
     if (resized) {
+      insets = { top: 0, bottom: 0, left: 0, right: 0 };
+      camera.clearViewOffset();
       renderer.setPixelRatio(1);
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
@@ -418,23 +683,35 @@ export function createScene(container, { reducedMotion = false } = {}) {
     ctx.fillRect(0, 0, out.width, out.height);
     ctx.drawImage(src, 0, 0);
     if (resized) {
+      insets = prevInsets;
       renderer.setPixelRatio(prevRatio);
       renderer.setSize(prevSize.x, prevSize.y, false);
       camera.aspect = prevAspect;
       camera.updateProjectionMatrix();
+      applyViewOffset();
       frame(true);
     }
+    refreshDecorations();
     return out;
   }
 
+  function screenPositionOf(key) {
+    const group = items.get(key);
+    if (!group) return null;
+    const p = group.position.clone().setY(group.position.y + (group.userData.height ?? 0) * 0.5).project(camera);
+    const rect = canvas.getBoundingClientRect();
+    return { x: rect.left + ((p.x + 1) / 2) * rect.width, y: rect.top + ((1 - p.y) / 2) * rect.height };
+  }
+
   function setLabelsVisible(on) {
-    labelRenderer.domElement.hidden = !on;
+    labelRenderer.domElement.classList.toggle('hide-labels', !on);
   }
 
   function dispose() {
     cancelAnimationFrame(raf);
     resizeObserver.disconnect();
     io.disconnect();
+    window.removeEventListener('keydown', onKey);
     clearWorld();
     controls.dispose();
     renderer.dispose();
@@ -442,5 +719,8 @@ export function createScene(container, { reducedMotion = false } = {}) {
   }
 
   resize();
-  return { update, setView, renderImage, setLabelsVisible, dispose };
+  Object.assign(api, {
+    update, setView, setInsets, renderImage, setLabelsVisible, select, screenPositionOf, dispose, onLayoutChange: null,
+  });
+  return api;
 }

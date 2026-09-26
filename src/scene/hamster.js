@@ -3,18 +3,15 @@
 import * as THREE from 'three';
 import { smoothstep } from '../calc.js';
 
-// Colours and typical head-and-body length (cm) used for the model. Presentation only; the
-// published data (data/species.json) doesn't include body length.
+// Fur colours per species. Model size comes from bodyCm() in layout.js.
 const LOOKS = {
-  syrian: { bodyCm: 16, back: '#d99a57', belly: '#f7ead7', stripe: null },
-  campbell: { bodyCm: 9, back: '#a8927a', belly: '#f0e8dc', stripe: '#5b4c3d' },
-  'winter-white': { bodyCm: 8.5, back: '#aaa69f', belly: '#f8f6f1', stripe: '#4e4944' },
-  'hybrid-dwarf': { bodyCm: 9, back: '#a39a8e', belly: '#f4efe7', stripe: '#554d45' },
-  roborovski: { bodyCm: 5, back: '#ddb47f', belly: '#fcf8f1', stripe: null, brows: true },
-  chinese: { bodyCm: 10, back: '#8f7d6a', belly: '#ede4d7', stripe: '#4a3e34', slim: true, longTail: true },
+  syrian: { back: '#d99a57', belly: '#f7ead7', stripe: null },
+  campbell: { back: '#a8927a', belly: '#f0e8dc', stripe: '#5b4c3d' },
+  'winter-white': { back: '#aaa69f', belly: '#f8f6f1', stripe: '#4e4944' },
+  'hybrid-dwarf': { back: '#a39a8e', belly: '#f4efe7', stripe: '#554d45' },
+  roborovski: { back: '#ddb47f', belly: '#fcf8f1', stripe: null, brows: true },
+  chinese: { back: '#8f7d6a', belly: '#ede4d7', stripe: '#4a3e34', slim: true, longTail: true },
 };
-
-export const modelBodyCm = (speciesId) => (LOOKS[speciesId] ?? LOOKS.syrian).bodyCm;
 
 const tmp = new THREE.Color();
 
