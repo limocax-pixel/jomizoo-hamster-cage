@@ -6,8 +6,8 @@ type: software
 authors:
   - name: "JOMIZOO"
     website: "https://jomizoo.com/"
-repository-code: "https://github.com/limocax-pixel/hamster-habitat-planner"
-url: "https://limocax-pixel.github.io/hamster-habitat-planner/"
+repository-code: "https://github.com/limocax-pixel/jomizoo-hamster-cage"
+url: "https://limocax-pixel.github.io/jomizoo-hamster-cage/"
 license: MIT
 version: "1.0.0"
 date-released: "2026-09-25"

@@ -9,8 +9,8 @@ import {
 import { defaultState } from './state.js';
 
 export const SITE = {
-  url: 'https://limocax-pixel.github.io/hamster-habitat-planner/',
-  repo: 'https://github.com/limocax-pixel/hamster-habitat-planner',
+  url: 'https://limocax-pixel.github.io/jomizoo-hamster-cage/',
+  repo: 'https://github.com/limocax-pixel/jomizoo-hamster-cage',
   updated: '2026-09-25',
 };
 
@@ -51,7 +51,7 @@ export function buildJsonLd({ list, faq, dataVersion }) {
   };
   const code = {
     '@type': 'SoftwareSourceCode',
-    name: 'hamster-habitat-planner',
+    name: 'jomizoo-hamster-cage',
     codeRepository: SITE.repo,
     programmingLanguage: 'JavaScript',
     license: 'https://opensource.org/licenses/MIT',

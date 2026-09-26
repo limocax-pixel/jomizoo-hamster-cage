@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://limocax-pixel.github.io/hamster-habitat-planner/">
+  <a href="https://limocax-pixel.github.io/jomizoo-hamster-cage/">
     <img src="public/og-image.jpg" alt="Hamster Habitat Planner: a 3D hamster tank with deep bedding and burrows visible through the glass" width="820">
   </a>
 </p>
@@ -10,7 +10,7 @@
 how many liters of bedding to buy, and whether the wheel is big enough and fits. For Syrian, Campbell's dwarf,
 winter white, hybrid dwarf, Roborovski and Chinese hamsters.
 
-**▶ Open the planner: https://limocax-pixel.github.io/hamster-habitat-planner/**
+**▶ Open the planner: https://limocax-pixel.github.io/jomizoo-hamster-cage/**
 
 Free, no sign-up, and everything runs in your browser. Made with love by [JOMIZOO](https://jomizoo.com/).
 
@@ -75,8 +75,8 @@ settled bedding.
 The numbers live in [`data/species.json`](data/species.json) and [`data/enclosures.json`](data/enclosures.json), and
 are also served from the site:
 
-- https://limocax-pixel.github.io/hamster-habitat-planner/data/species.json
-- https://limocax-pixel.github.io/hamster-habitat-planner/data/enclosures.json
+- https://limocax-pixel.github.io/jomizoo-hamster-cage/data/species.json
+- https://limocax-pixel.github.io/jomizoo-hamster-cage/data/enclosures.json
 
 Each species record has minimum floor space (`floor`), minimum height (`height`), bedding depth and burrowing depth
 (`bedding`), wheel diameter (`wheel`), maximum wire bar gap (`bars`), sand bath size (`sandBath`), room temperature
@@ -112,7 +112,7 @@ commercially, with credit to **JOMIZOO Hamster Habitat Planner** and a link.
 - **[fivelittlehams]** (2018). [How to calculate how much bedding is needed to fill your cage](https://fivelittlehams.wixsite.com/correcthamstercare/blank-1/2018/01/06/how-to-calculate-how-much-bedding-is-needed-to-fill-your-cage). Five Little Hams (keeper guide). Keeper estimate: a 50 L bag may only fill about 30 L once pressed down, so buy 1.5–2× the calculated volume.
 <!-- sources:end -->
 
-Found an error, a newer guideline or a better source? Please [open an issue](https://github.com/limocax-pixel/hamster-habitat-planner/issues)
+Found an error, a newer guideline or a better source? Please [open an issue](https://github.com/limocax-pixel/jomizoo-hamster-cage/issues)
 with a link to the source.
 
 ## Development
@@ -141,7 +141,7 @@ Pushing to `main` runs the tests and deploys to GitHub Pages with GitHub Actions
 
 ## Cite
 
-> JOMIZOO (2026). *Hamster Habitat Planner*. https://limocax-pixel.github.io/hamster-habitat-planner/
+> JOMIZOO (2026). *Hamster Habitat Planner*. https://limocax-pixel.github.io/jomizoo-hamster-cage/
 
 See [`CITATION.cff`](CITATION.cff).
 

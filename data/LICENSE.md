@@ -9,7 +9,7 @@ provide a link to the license, and indicate if changes were made.
 
 Suggested credit:
 
-> Data: JOMIZOO Hamster Habitat Planner (CC BY 4.0) — https://limocax-pixel.github.io/hamster-habitat-planner/
+> Data: JOMIZOO Hamster Habitat Planner (CC BY 4.0) — https://limocax-pixel.github.io/jomizoo-hamster-cage/
 
 The logo and brand assets in `public/brand/` are trademarks of JOMIZOO and are not covered by this license or by the
 MIT license of the code.

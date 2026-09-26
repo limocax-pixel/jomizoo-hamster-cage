@@ -15,7 +15,7 @@ const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const speciesById = new Map(speciesData.species.map((s) => [s.id, s]));
 const presets = new Map(enclosureData.presets.map((p) => [p.id, p]));
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const SHARE_HOST = 'limocax-pixel.github.io/hamster-habitat-planner';
+const SHARE_HOST = 'limocax-pixel.github.io/jomizoo-hamster-cage';
 
 let state = stateFromQuery(location.search, [...speciesById.keys()]) ?? defaultState();
 const species = () => speciesById.get(state.species);
@@ -342,7 +342,7 @@ $('#snapshot').addEventListener('click', async () => {
     if (!blob) return;
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `hamster-habitat-${latest.sp.id}.png`;
+    link.download = `jomizoo-hamster-cage-${latest.sp.id}.png`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(link.href), 1000);
   }, 'image/png');
